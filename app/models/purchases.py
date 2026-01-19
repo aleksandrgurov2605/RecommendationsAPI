@@ -1,0 +1,44 @@
+from datetime import datetime
+from decimal import Decimal
+
+from sqlalchemy import ForeignKey, Integer, DateTime, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.db.database import Base
+
+
+class Purchase(Base):
+    __tablename__ = "purchases"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    status: Mapped[str]
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    total_amount: Mapped[Decimal]
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    user: Mapped["User"] = relationship("User",
+                                        back_populates="purchases")
+    purchase_units: Mapped[list["PurchaseUnit"]] = relationship("PurchaseUnit",
+                                                                back_populates="purchase")
+
+
+class PurchaseUnit(Base):
+    __tablename__ = "purchase_units"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    purchase_id: Mapped[int] = mapped_column(ForeignKey("purchases.id"), nullable=False)
+    item_id: Mapped[int] = mapped_column(ForeignKey("items.id"), nullable=False)
+    quantity: Mapped[int]
+    unit_price: Mapped[Decimal]
+    total_price: Mapped[Decimal]
+
+    purchase: Mapped["Purchase"] = relationship("Purchase",
+                                                back_populates="purchase_units")
+    item: Mapped["Item"] = relationship("Item",
+                                        back_populates="purchase_unit")
