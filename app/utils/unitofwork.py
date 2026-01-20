@@ -1,11 +1,7 @@
 from abc import ABC, abstractmethod
 
 from app.db.database import async_session_maker
-from app.repositories.purchases_repository import PurchaseRepository
-from app.repositories.recommendations_repository import RecommendationRepository
-from app.repositories.items_repository import ItemRepository
-from app.repositories.user_purchases_repository import UserPurchaseRepository
-from app.repositories.users_repository import UserRepository
+from app.repositories.categories import CategoryRepository
 
 
 class IUnitOfWork(ABC):
@@ -39,11 +35,7 @@ class UnitOfWork(IUnitOfWork):
     async def __aenter__(self):
         self.session = self.session_factory()
 
-        self.items = ItemRepository(self.session)
-        self.recommendations = RecommendationRepository(self.session)
-        self.user_purchases = UserPurchaseRepository(self.session)
-        self.users = UserRepository(self.session)
-        self.purchases = PurchaseRepository(self.session)
+        self.category = CategoryRepository(self.session)
 
         return self
 

@@ -1,15 +1,17 @@
 from abc import ABC, abstractmethod
-import logging
-from typing import Any
+from typing import Any, TypeVar, Type
+
 from pydantic import BaseModel
 
-from sqlalchemy import CursorResult, func, select, insert, update
+from sqlalchemy import CursorResult, func, select, insert, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
+
+T = TypeVar("T")
 
 
 class AbstractRepository(ABC):
     @abstractmethod
-    async def add_one(self, data: BaseModel) -> BaseModel:
+    async def add_one(self, data: dict) -> BaseModel:
         raise NotImplementedError
 
     @abstractmethod
@@ -17,16 +19,20 @@ class AbstractRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def fetch_one(self, **filter_by: dict) -> BaseModel | None:
+    async def fetch_one(self, **filter_by: Any) -> BaseModel | None:
         raise NotImplementedError
 
     @abstractmethod
-    async def update_one(self, data: BaseModel, **where: dict) -> BaseModel:
+    async def update(self, data: dict, where: Any) -> BaseModel:
         raise NotImplementedError
+
+    # @abstractmethod
+    # async def delete(self, where: Any):
+    #     raise NotImplementedError
 
 
 class Repository(AbstractRepository):
-    model = None
+    model: Type[Any] = None
 
     def __init__(self, session: AsyncSession):
         self.session = session
@@ -42,23 +48,28 @@ class Repository(AbstractRepository):
     async def find_all(self):
         """Получить все записи из таблицы в БД, списком"""
 
-        data = await self.session.execute(select(self.model))
-        result = data.scalars().all()
-        return result
+        res = await self.session.execute(select(self.model))
+        return res.scalars().all()
 
-    async def fetch_one(self, **filter_by: dict) -> BaseModel | None:
-        """Получить одну запись, по условию filter_by, или None"""
+    async def fetch_one(self, where: int) -> BaseModel | None:
+        """Получить одну запись, по условию where, или None"""
 
-        stmt = select(self.model).filter_by(**filter_by)
-        data = (await self.session.execute(stmt)).scalar_one_or_none()
+        stmt = select(self.model).where(self.model.id==where)
+        res  = await self.session.execute(stmt)
+        return res.scalar_one_or_none()
 
-        return data
+    async def update(self, data: dict, where: int) -> BaseModel | None:
+        """Обновляет одну запись данными из data, по условию filter_by."""
 
-    async def update_one(self, data: BaseModel, **where: dict) -> BaseModel:
-        """Обновляет одну запись данными из data, по условию where. Если запись не одна, вызывается исключение"""
-
-        stmt = update(self.model).values(**data).where(**where).returning(self.model)
+        stmt = update(self.model).where(self.model.id==where).values(data).returning(self.model)
         data = await self.session.execute(stmt)
-        result = data.scalar_one().to_pydantic_model()
+        result = data.scalar_one()
 
         return result
+
+    async def delete(self, where: int) -> None:
+        """Удаляет одну запись из БД по условию filter_by."""
+
+        stmt = delete(self.model).where(self.model.id == where)
+        await self.session.execute(stmt)
+
