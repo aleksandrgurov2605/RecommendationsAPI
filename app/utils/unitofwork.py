@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 
 from app.db.database import async_session_maker
 from app.repositories.categories import CategoryRepository
+from app.repositories.users import UserRepository
+
 
 
 class IUnitOfWork(ABC):
@@ -36,6 +38,7 @@ class UnitOfWork(IUnitOfWork):
         self.session = self.session_factory()
 
         self.category = CategoryRepository(self.session)
+        self.user = UserRepository(self.session)
 
         return self
 

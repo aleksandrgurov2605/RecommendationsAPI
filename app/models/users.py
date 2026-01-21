@@ -11,7 +11,7 @@ class User(Base):
     email: Mapped[str]
     name: Mapped[str]
     password: Mapped[str]
-    is_active: Mapped[bool]
+    is_active: Mapped[bool] = mapped_column(default=True)
 
     purchases: Mapped["Purchase"] = relationship("Purchase",
                                         back_populates="user")

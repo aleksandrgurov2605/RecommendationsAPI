@@ -4,8 +4,10 @@ from fastapi import FastAPI, status, Request
 from fastapi.responses import JSONResponse
 
 from app.db.database import Base, engine
-from app.errors.exceptions import CategoryParentNotFoundError, CategoryNotFoundError
+from app.errors.categories_exceptions import CategoryParentNotFoundError, CategoryNotFoundError, CategoryParentError
+from app.errors.users_exceptions import UserNotFoundError
 from app.routers.categories import router as categories_router
+from app.routers.users import router as users_router
 from app.models import *
 
 @asynccontextmanager
@@ -27,6 +29,7 @@ async def root():
 
 
 app.include_router(categories_router)
+app.include_router(users_router)
 
 
 @app.exception_handler(CategoryNotFoundError)
@@ -40,6 +43,20 @@ async def category_not_found_exception_handler(request: Request, exc: CategoryNo
 async def category_parent_not_found_exception_handler(request: Request, exc: CategoryParentNotFoundError):
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
+        content={"detail": exc.message},
+    )
+
+@app.exception_handler(CategoryParentError)
+async def category_parent_exception_handler(request: Request, exc: CategoryParentError):
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"detail": exc.message},
+    )
+
+@app.exception_handler(UserNotFoundError)
+async def user_not_found_exception_handler(request: Request, exc: UserNotFoundError):
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
         content={"detail": exc.message},
     )
 

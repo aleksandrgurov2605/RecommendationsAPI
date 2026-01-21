@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from app.db.database import Base
 from app.main import app as prod_app
 from app.models import Category  # noqa
+from app.models import User  # noqa
 from app.utils.unitofwork import UnitOfWork
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"  # отдельная БД для тестов
@@ -15,10 +16,10 @@ TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"  # отдельная БД д
 @pytest_asyncio.fixture
 async def session_factory():
     # Генерируем уникальное имя БД для каждого теста, чтобы память не пересекалась
-    test_db_url = f"sqlite+aiosqlite:///file:{uuid.uuid4()}?mode=memory&cache=shared"
+    # test_db_url = f"sqlite+aiosqlite:///file:{uuid.uuid4()}?mode=memory&cache=shared"
 
     engine = create_async_engine(
-        test_db_url,
+        TEST_DATABASE_URL,
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
@@ -29,20 +30,6 @@ async def session_factory():
     factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     yield factory
     await engine.dispose()
-
-
-@pytest_asyncio.fixture
-async def setup_database(session_factory):
-    # Используем фабрику текущего теста
-    async with session_factory() as session:
-        category1 = Category(name="Электроника", parent_id=None)
-        session.add(category1)
-        await session.flush()  # Получаем ID
-
-        category2 = Category(name="Смартфоны", parent_id=category1.id)
-        session.add(category2)
-
-        await session.commit()
 
 
 @pytest_asyncio.fixture

@@ -13,3 +13,4 @@ wheels/
 /tren.py
 /.env
 /.database.db
+/file

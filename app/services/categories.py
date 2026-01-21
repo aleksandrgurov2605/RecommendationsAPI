@@ -1,4 +1,4 @@
-from app.errors.exceptions import CategoryParentNotFoundError, CategoryNotFoundError, CategoryParentError
+from app.errors.categories_exceptions import CategoryParentNotFoundError, CategoryNotFoundError, CategoryParentError
 from app.schemas.categories import CategoryCreate, CategoryRead
 from app.utils.unitofwork import IUnitOfWork
 
@@ -11,7 +11,7 @@ class CategoryService:
                 parent = await uow.category.fetch_one(where=category.parent_id)
                 if parent is None:
                     raise CategoryParentNotFoundError
-        category_dict: dict = category.model_dump()
+        category_dict = category.model_dump()
         async with uow as uow:
             category_from_db = await uow.category.add_one(category_dict)
             category_to_return = CategoryRead.model_validate(category_from_db)

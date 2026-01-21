@@ -3,7 +3,7 @@ from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 class UserBase(BaseModel):
     email: EmailStr = Field(description="Email пользователя")
-    name: str
+    name: str = Field(min_length=2, max_length=40, description="Имя пользователя(2-40 символов)")
 
 
 class UserCreate(UserBase):
