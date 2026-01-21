@@ -40,7 +40,7 @@ async def get_category_by_id(uow: UOWDep, category_id: int):
 @router.put("/{category_id}", response_model=CategoryRead)
 async def update_category(uow: UOWDep, category_id: int, category: CategoryCreate):
     """
-    Обновляет категорию по её ID.
+    Обновляет категорию по id.
     """
     category = await CategoryService.update_category(uow, category_id, category)
     return category
@@ -49,7 +49,7 @@ async def update_category(uow: UOWDep, category_id: int, category: CategoryCreat
 @router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_category(uow: UOWDep, category_id: int):
     """
-    Выполняет удаление категории по её ID.
+    Выполняет удаление категории по id.
     """
     await CategoryService.delete_category(uow, category_id)
     return {"message": f"Category {category_id} was deleted."}

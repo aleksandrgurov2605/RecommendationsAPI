@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from app.db.database import async_session_maker
 from app.repositories.categories import CategoryRepository
 from app.repositories.users import UserRepository
+from app.repositories.items import ItemRepository
 
 
 
@@ -39,6 +40,7 @@ class UnitOfWork(IUnitOfWork):
 
         self.category = CategoryRepository(self.session)
         self.user = UserRepository(self.session)
+        self.item = ItemRepository(self.session)
 
         return self
 

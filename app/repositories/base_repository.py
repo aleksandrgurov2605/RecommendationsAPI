@@ -26,9 +26,9 @@ class AbstractRepository(ABC):
     async def update(self, data: dict, where: Any) -> BaseModel:
         raise NotImplementedError
 
-    # @abstractmethod
-    # async def delete(self, where: Any):
-    #     raise NotImplementedError
+    @abstractmethod
+    async def delete(self, where: Any):
+        raise NotImplementedError
 
 
 class Repository(AbstractRepository):
@@ -41,9 +41,8 @@ class Repository(AbstractRepository):
         """Добавить одну запись в БД (модель Pydentic)"""
 
         stmt = insert(self.model).values(**data).returning(self.model)
-        data = await self.session.execute(stmt)
-        res = data.scalar_one()
-        return res
+        res = await self.session.execute(stmt)
+        return res.scalar_one()
 
     async def find_all(self):
         """Получить все записи из таблицы в БД, списком"""
@@ -63,9 +62,9 @@ class Repository(AbstractRepository):
 
         stmt = update(self.model).where(self.model.id==where).values(data).returning(self.model)
         data = await self.session.execute(stmt)
-        result = data.scalar_one()
+        res = data.scalar_one()
 
-        return result
+        return res
 
     async def delete(self, where: int) -> None:
         """Удаляет одну запись из БД по условию filter_by."""

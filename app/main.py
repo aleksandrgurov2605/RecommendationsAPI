@@ -6,9 +6,11 @@ from fastapi.responses import JSONResponse
 from app.db.database import Base, engine
 from app.errors.categories_exceptions import CategoryParentNotFoundError, CategoryNotFoundError, CategoryParentError
 from app.errors.users_exceptions import UserNotFoundError
+from app.errors.items_exceptions import ItemNotFoundError, WrongCategoryNotFoundError
 from app.routers.categories import router as categories_router
 from app.routers.users import router as users_router
-from app.models import *
+from app.routers.items import router as items_router
+from app.models import *  # noqa
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -30,6 +32,7 @@ async def root():
 
 app.include_router(categories_router)
 app.include_router(users_router)
+app.include_router(items_router)
 
 
 @app.exception_handler(CategoryNotFoundError)
@@ -57,6 +60,21 @@ async def category_parent_exception_handler(request: Request, exc: CategoryParen
 async def user_not_found_exception_handler(request: Request, exc: UserNotFoundError):
     return JSONResponse(
         status_code=status.HTTP_404_NOT_FOUND,
+        content={"detail": exc.message},
+    )
+
+@app.exception_handler(ItemNotFoundError)
+async def item_not_found_exception_handler(request: Request, exc: ItemNotFoundError):
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
+        content={"detail": exc.message},
+    )
+
+
+@app.exception_handler(WrongCategoryNotFoundError)
+async def wring_category_id_exception_handler(request: Request, exc: WrongCategoryNotFoundError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         content={"detail": exc.message},
     )
 
