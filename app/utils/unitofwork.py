@@ -4,6 +4,7 @@ from app.db.database import async_session_maker
 from app.repositories.categories import CategoryRepository
 from app.repositories.users import UserRepository
 from app.repositories.items import ItemRepository
+from app.repositories.carts import CartRepository
 
 
 
@@ -41,6 +42,7 @@ class UnitOfWork(IUnitOfWork):
         self.category = CategoryRepository(self.session)
         self.user = UserRepository(self.session)
         self.item = ItemRepository(self.session)
+        self.cart = CartRepository(self.session)
 
         return self
 

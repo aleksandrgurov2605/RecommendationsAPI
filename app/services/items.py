@@ -1,4 +1,3 @@
-from app.errors.categories_exceptions import CategoryNotFoundError
 from app.errors.items_exceptions import ItemNotFoundError, WrongCategoryNotFoundError
 from app.schemas.items import ItemCreate, ItemRead
 from app.utils.unitofwork import IUnitOfWork
@@ -6,7 +5,29 @@ from app.utils.unitofwork import IUnitOfWork
 
 class ItemService:
     @staticmethod
-    async def add_item(uow: IUnitOfWork, item: ItemCreate) -> ItemRead:
+    async def get_all_items(
+            uow: IUnitOfWork
+    ) -> list[ItemRead]:
+        """
+        Получить список всех активных товаров.
+        :param uow:
+        :return:
+        """
+        async with uow as uow:
+            items_to_return = await uow.item.find_all()
+            return [ItemRead.model_validate(item) for item in items_to_return]
+
+    @staticmethod
+    async def add_item(
+            uow: IUnitOfWork,
+            item: ItemCreate
+    ) -> ItemRead:
+        """
+        Создать новый товар.
+        :param uow:
+        :param item:
+        :return:
+        """
         async with uow as uow:
             # Проверяем существование категории
             existing_category = await uow.category.fetch_one(where=item.category_id)
@@ -19,13 +40,16 @@ class ItemService:
             return item_to_return
 
     @staticmethod
-    async def get_all_items(uow: IUnitOfWork) -> list[ItemRead]:
-        async with uow as uow:
-            items_to_return = await uow.item.find_all()
-            return [ItemRead.model_validate(item) for item in items_to_return]
-
-    @staticmethod
-    async def get_item(uow: IUnitOfWork, item_id: int) -> ItemRead:
+    async def get_item(
+            uow: IUnitOfWork,
+            item_id: int
+    ) -> ItemRead:
+        """
+        Получить активный товар по id.
+        :param uow:
+        :param item_id:
+        :return:
+        """
         async with uow as uow:
             item_to_return = await uow.item.fetch_one(where=item_id)
             if not item_to_return:
@@ -33,7 +57,18 @@ class ItemService:
             return ItemRead.model_validate(item_to_return)
 
     @staticmethod
-    async def update_item(uow: IUnitOfWork, item_id: int, item: ItemCreate) -> ItemRead:
+    async def update_item(
+            uow: IUnitOfWork,
+            item_id: int,
+            item: ItemCreate
+    ) -> ItemRead:
+        """
+        Обновить товар по id
+        :param uow:
+        :param item_id:
+        :param item:
+        :return:
+        """
         async with uow as uow:
             # Проверяем существование товара
             existing_item = await uow.item.fetch_one(where=item_id)
@@ -53,7 +88,16 @@ class ItemService:
             return ItemRead.model_validate(item_to_return)
 
     @staticmethod
-    async def delete_item(uow: IUnitOfWork, item_id: int):
+    async def delete_item(
+            uow: IUnitOfWork,
+            item_id: int
+    ) -> None:
+        """
+        Удалить товар по id.
+        :param uow:
+        :param item_id:
+        :return:
+        """
         async with uow as uow:
             # Проверяем существование товара
             existing_item = await uow.item.fetch_one(where=item_id)

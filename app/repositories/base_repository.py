@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Any, TypeVar, Type
+from typing import Any, Type
 
 from pydantic import BaseModel
 
-from sqlalchemy import CursorResult, func, select, insert, update, delete
+from sqlalchemy import select, insert, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-T = TypeVar("T")
+from app.db.database import Base
 
 
 class AbstractRepository(ABC):
@@ -32,34 +32,46 @@ class AbstractRepository(ABC):
 
 
 class Repository(AbstractRepository):
-    model: Type[Any] = None
+    model: Type[Base] = None
 
     def __init__(self, session: AsyncSession):
         self.session = session
 
     async def add_one(self, data: dict) -> BaseModel:
-        """Добавить одну запись в БД (модель Pydentic)"""
-
+        """
+        Добавить одну запись в БД.
+        :param data:
+        :return:
+        """
         stmt = insert(self.model).values(**data).returning(self.model)
         res = await self.session.execute(stmt)
         return res.scalar_one()
 
     async def find_all(self):
-        """Получить все записи из таблицы в БД, списком"""
-
+        """
+        Получить все записи из таблицы в БД, списком
+        :return:
+        """
         res = await self.session.execute(select(self.model))
         return res.scalars().all()
 
     async def fetch_one(self, where: int) -> BaseModel | None:
-        """Получить одну запись, по условию where, или None"""
-
+        """
+        Получить одну запись по условию where или None
+        :param where:
+        :return:
+        """
         stmt = select(self.model).where(self.model.id==where)
         res  = await self.session.execute(stmt)
         return res.scalar_one_or_none()
 
     async def update(self, data: dict, where: int) -> BaseModel | None:
-        """Обновляет одну запись данными из data, по условию filter_by."""
-
+        """
+        Обновить одну запись по условию filter_by данными из data.
+        :param data:
+        :param where:
+        :return:
+        """
         stmt = update(self.model).where(self.model.id==where).values(data).returning(self.model)
         data = await self.session.execute(stmt)
         res = data.scalar_one()
@@ -67,8 +79,11 @@ class Repository(AbstractRepository):
         return res
 
     async def delete(self, where: int) -> None:
-        """Удаляет одну запись из БД по условию filter_by."""
-
+        """
+        Удалить одну запись из БД по условию filter_by.
+        :param where:
+        :return:
+        """
         stmt = delete(self.model).where(self.model.id == where)
         await self.session.execute(stmt)
 

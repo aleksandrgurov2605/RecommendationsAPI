@@ -1,8 +1,5 @@
-from datetime import datetime
-from decimal import Decimal
-
-from sqlalchemy import ForeignKey, Integer, DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey, Integer
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.database import Base
 

@@ -1,26 +1,67 @@
-from app.errors.users_exceptions import UserNotFoundError
+import jwt
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.exc import IntegrityError
+
+from app.core.config import settings
+from app.errors.users_exceptions import UserNotFoundError, CredentialsError, TokenHasExpiredError, \
+    EmailAlreadyTakenError
 from app.schemas.users import UserCreate, UserRead
+from app.utils.auth import create_access_token, create_refresh_token
+from app.utils.logger import logger
+from app.utils.security import verify_password, get_password_hash
 from app.utils.unitofwork import IUnitOfWork
 
 
 class UserService:
     @staticmethod
-    async def add_user(uow: IUnitOfWork, user: UserCreate) -> UserRead:
-        user_dict = user.model_dump()
-        async with uow as uow:
-            user_from_db = await uow.user.add_one(user_dict)
-            user_to_return = UserRead.model_validate(user_from_db)
-            await uow.commit()
-            return user_to_return
-
-    @staticmethod
-    async def get_all_users(uow: IUnitOfWork) -> list[UserRead]:
+    async def get_all_users(
+            uow: IUnitOfWork
+    ) -> list[UserRead]:
+        """
+        Получить список всех активных пользователей.
+        :param uow:
+        :return:
+        """
         async with uow as uow:
             users_to_return = await uow.user.find_all()
             return [UserRead.model_validate(user) for user in users_to_return]
 
     @staticmethod
-    async def get_user(uow: IUnitOfWork, user_id: int) -> UserRead:
+    async def add_user(
+            uow: IUnitOfWork,
+            user: UserCreate
+    ) -> UserRead:
+        """
+        Создать нового пользователя.
+        :param uow:
+        :param user:
+        :return:
+        """
+        user_data = user.model_dump()
+        user_data['password'] = get_password_hash(user_data['password'])
+
+        async with uow as uow:
+            try:
+                user_from_db = await uow.user.add_one(user_data)
+            except IntegrityError:
+                raise EmailAlreadyTakenError
+            user_to_return = UserRead.model_validate(user_from_db)
+            await uow.commit()
+            return user_to_return
+
+
+
+    @staticmethod
+    async def get_user(
+            uow: IUnitOfWork,
+            user_id: int
+    ) -> UserRead:
+        """
+        Получить активного пользователя по id.
+        :param uow:
+        :param user_id:
+        :return:
+        """
         async with uow as uow:
             user_to_return = await uow.user.fetch_one(where=user_id)
             if not user_to_return:
@@ -28,21 +69,45 @@ class UserService:
             return UserRead.model_validate(user_to_return)
 
     @staticmethod
-    async def update_user(uow: IUnitOfWork, user_id: int, user: UserCreate) -> UserRead:
+    async def update_user(
+            uow: IUnitOfWork,
+            user_id: int,
+            user: UserCreate
+    ) -> UserRead:
+        """
+        Обновить пользователя по id.
+        :param uow:
+        :param user_id:
+        :param user:
+        :return:
+        """
         async with uow as uow:
             # Проверяем существование пользователя
             existing_user = await uow.user.fetch_one(where=user_id)
             if not existing_user:
                 raise UserNotFoundError
             user_data = user.model_dump()
-            user_to_return = await uow.user.update(data=user_data, where=user_id)
+            user_data['password'] = get_password_hash(user_data['password'])
+            try:
+                user_to_return = await uow.user.update(data=user_data, where=user_id)
+            except IntegrityError:
+                raise EmailAlreadyTakenError
             if not user_to_return:
                 raise UserNotFoundError
             await uow.commit()
             return UserRead.model_validate(user_to_return)
 
     @staticmethod
-    async def delete_user(uow: IUnitOfWork, user_id: int):
+    async def delete_user(
+            uow: IUnitOfWork,
+            user_id: int
+    ) -> None:
+        """
+        Удалить пользователя по id.
+        :param uow:
+        :param user_id:
+        :return:
+        """
         async with uow as uow:
             # Проверяем существование пользователя
             existing_user = await uow.user.fetch_one(where=user_id)
@@ -51,3 +116,57 @@ class UserService:
 
             await uow.user.delete(where=user_id)
             await uow.commit()
+
+    @staticmethod
+    async def login(
+            uow: IUnitOfWork,
+            form_data: OAuth2PasswordRequestForm
+    ) -> dict[str, str]:
+        """
+        Аутентифицировать пользователя и получить access_token и refresh_token.
+        :param uow:
+        :param form_data:
+        :return:
+        """
+        async with uow as uow:
+            # Проверяем существование пользователя
+            user = await uow.user.get_user(email=form_data.username)
+            if not user or not verify_password(form_data.password, user.password):
+                logger.info(f"if not user or not verify_password(form_data.password, user.password)")
+                raise CredentialsError
+
+            access_token = create_access_token(data={"sub": user.email, "id": user.id})
+            refresh_token = create_refresh_token(data={"sub": user.email, "id": user.id})
+            return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+
+    @staticmethod
+    async def refresh_token(
+            uow: IUnitOfWork,
+            refresh_token: str
+    ) -> dict[str, str]:
+        """
+        Обновляет access_token с помощью refresh_token.
+        :param uow:
+        :param refresh_token:
+        :return:
+        """
+        try:
+            payload = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+            email: str = payload.get("sub")
+            if email is None:
+                raise CredentialsError
+        except jwt.ExpiredSignatureError:
+            # refresh-токен истёк
+            raise TokenHasExpiredError
+        except jwt.PyJWTError:
+            # подпись неверна или токен повреждён
+            raise CredentialsError
+        async with uow as uow:
+            # Проверяем существование пользователя
+            user = await uow.user.get_user(email=email)
+            if user is None:
+                raise CredentialsError
+            access_token = create_access_token(data={"sub": user.email, "id": user.id})
+        return {"access_token": access_token, "token_type": "bearer"}
+
+

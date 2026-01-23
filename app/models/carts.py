@@ -6,20 +6,20 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
 
-class CartItem(Base):
-    __tablename__ = "cart_items"
+class CartUnit(Base):
+    __tablename__ = "cart_units"
 
     __table_args__ = (
-        UniqueConstraint("user_id", "product_id", name="uq_cart_items_user_product"),
+        UniqueConstraint("user_id", "item_id", name="uq_cart_units_user_item"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    product_id: Mapped[int] = mapped_column(ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True)
+    item_id: Mapped[int] = mapped_column(ForeignKey("items.id", ondelete="CASCADE"), nullable=False, index=True)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(),
                                                  onupdate=func.now(), nullable=False)
 
-    user: Mapped["User"] = relationship("User", back_populates="cart_items")
-    product: Mapped["Product"] = relationship("Product", back_populates="cart_items")
+    user: Mapped["User"] = relationship("User", back_populates="cart_units")
+    item: Mapped["Item"] = relationship("Item", back_populates="cart_units", lazy="selectin")

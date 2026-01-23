@@ -5,7 +5,16 @@ from app.utils.unitofwork import IUnitOfWork
 
 class CategoryService:
     @staticmethod
-    async def add_category(uow: IUnitOfWork, category: CategoryCreate) -> CategoryRead:
+    async def add_category(
+            uow: IUnitOfWork,
+            category: CategoryCreate
+    ) -> CategoryRead:
+        """
+
+        :param uow:
+        :param category:
+        :return:
+        """
         if category.parent_id is not None:
             async with uow as uow:
                 parent = await uow.category.fetch_one(where=category.parent_id)
@@ -19,13 +28,29 @@ class CategoryService:
             return category_to_return
 
     @staticmethod
-    async def get_all_categories(uow: IUnitOfWork) -> list[CategoryRead]:
+    async def get_all_categories(
+            uow: IUnitOfWork
+    ) -> list[CategoryRead]:
+        """
+        Получить список всех активных категорий.
+        :param uow:
+        :return:
+        """
         async with uow as uow:
             categories_to_return = await uow.category.find_all()
             return [CategoryRead.model_validate(category) for category in categories_to_return]
 
     @staticmethod
-    async def get_category(uow: IUnitOfWork, category_id: int) -> CategoryRead:
+    async def get_category(
+            uow: IUnitOfWork,
+            category_id: int
+    ) -> CategoryRead:
+        """
+        Получить активную категорию по id.
+        :param uow:
+        :param category_id:
+        :return:
+        """
         async with uow as uow:
             category_to_return = await uow.category.fetch_one(where=category_id)
             if not category_to_return:
@@ -33,7 +58,18 @@ class CategoryService:
             return CategoryRead.model_validate(category_to_return)
 
     @staticmethod
-    async def update_category(uow: IUnitOfWork, category_id: int, category: CategoryCreate) -> CategoryRead:
+    async def update_category(
+            uow: IUnitOfWork,
+            category_id: int,
+            category: CategoryCreate
+    ) -> CategoryRead:
+        """
+        Обновить категорию по id.
+        :param uow:
+        :param category_id:
+        :param category:
+        :return:
+        """
         async with uow as uow:
             # Проверяем существование категории
             existing_category = await uow.category.fetch_one(where=category_id)
@@ -54,7 +90,16 @@ class CategoryService:
             return CategoryRead.model_validate(category_to_return)
 
     @staticmethod
-    async def delete_category(uow: IUnitOfWork, category_id: int):
+    async def delete_category(
+            uow: IUnitOfWork,
+            category_id: int
+    ) -> None:
+        """
+        Удалить категорию по id.
+        :param uow:
+        :param category_id:
+        :return:
+        """
         async with uow as uow:
             # Проверяем существование категории
             existing_category = await uow.category.fetch_one(where=category_id)

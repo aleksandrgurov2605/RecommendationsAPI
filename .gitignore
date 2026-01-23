@@ -14,3 +14,4 @@ wheels/
 /.env
 /.database.db
 /file
+/app.log

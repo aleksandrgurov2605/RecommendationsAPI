@@ -3,6 +3,7 @@ from fastapi import APIRouter, status
 from app.dependencies.dependencies import UOWDep
 from app.schemas.categories import CategoryCreate, CategoryRead
 from app.services.categories import CategoryService
+from app.utils.logger import logger
 
 router = APIRouter(
     prefix="/categories",
@@ -13,8 +14,11 @@ router = APIRouter(
 @router.get("/", response_model=list[CategoryRead])
 async def get_all_categories(uow: UOWDep):
     """
-    Возвращает список всех активных категорий.
+    Получить список всех активных категорий.
+    :param uow:
+    :return:
     """
+    logger.info("Получить список всех активных категорий.")
     categories = await CategoryService.get_all_categories(uow)
     return categories
 
@@ -22,8 +26,12 @@ async def get_all_categories(uow: UOWDep):
 @router.post("/", response_model=CategoryRead, status_code=status.HTTP_201_CREATED)
 async def create_category(uow: UOWDep, category: CategoryCreate):
     """
-    Создаёт новую категорию.
+    Создать новую категорию.
+    :param uow:
+    :param category:
+    :return:
     """
+    logger.info(f"Создать новую категорию {category.name}.")
     category_created = await CategoryService.add_category(uow, category)
     return category_created
 
@@ -31,8 +39,12 @@ async def create_category(uow: UOWDep, category: CategoryCreate):
 @router.get("/{category_id}", response_model=CategoryRead)
 async def get_category_by_id(uow: UOWDep, category_id: int):
     """
-    Возвращает активную категорию по id.
+    Получить активную категорию по id.
+    :param uow:
+    :param category_id:
+    :return:
     """
+    logger.info(f"Получить активную категорию по id = {category_id}.")
     category = await CategoryService.get_category(uow, category_id)
     return category
 
@@ -40,8 +52,13 @@ async def get_category_by_id(uow: UOWDep, category_id: int):
 @router.put("/{category_id}", response_model=CategoryRead)
 async def update_category(uow: UOWDep, category_id: int, category: CategoryCreate):
     """
-    Обновляет категорию по id.
+    Обновить категорию по id.
+    :param uow:
+    :param category_id:
+    :param category:
+    :return:
     """
+    logger.info(f"Обновить категорию по id {category_id}.")
     category = await CategoryService.update_category(uow, category_id, category)
     return category
 
@@ -49,7 +66,11 @@ async def update_category(uow: UOWDep, category_id: int, category: CategoryCreat
 @router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_category(uow: UOWDep, category_id: int):
     """
-    Выполняет удаление категории по id.
+    Удалить категорию по id.
+    :param uow:
+    :param category_id:
+    :return:
     """
+    logger.info(f"Удалить категорию по id {category_id}.")
     await CategoryService.delete_category(uow, category_id)
     return {"message": f"Category {category_id} was deleted."}

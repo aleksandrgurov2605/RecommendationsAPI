@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel, Field, ConfigDict
 
-from app.models.items import Item
+from app.schemas.items import ItemRead
 
 
 class CartUnitBase(BaseModel):
@@ -22,8 +22,9 @@ class CartUnitRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int = Field(..., description="ID позиции корзины")
+    user_id: int = Field(description="ID пользователя")
     quantity: int = Field(..., ge=1, description="Количество товара")
-    item: Item = Field(..., description="Информация о товаре")
+    item: ItemRead = Field(..., description="Информация о товаре")
 
 
 
@@ -34,5 +35,5 @@ class Cart(BaseModel):
     user_id: int = Field(..., description="ID пользователя")
     units: list[CartUnitRead] = Field(default_factory=list, description="Содержимое корзины")
     total_quantity: int = Field(..., ge=0, description="Общее количество товаров")
-    total_price: Decimal = Field(..., ge=0, description="Общая стоимость товаров")
+    total_price: Decimal = Field(..., ge=0, description="Общая стоимость товаров", examples=[Decimal("250.00")])
 
