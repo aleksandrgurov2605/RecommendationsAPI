@@ -5,6 +5,7 @@ from app.repositories.categories import CategoryRepository
 from app.repositories.users import UserRepository
 from app.repositories.items import ItemRepository
 from app.repositories.carts import CartRepository
+from app.repositories.purchases import PurchaseRepository, PurchaseUnitRepository
 
 
 
@@ -43,6 +44,8 @@ class UnitOfWork(IUnitOfWork):
         self.user = UserRepository(self.session)
         self.item = ItemRepository(self.session)
         self.cart = CartRepository(self.session)
+        self.purchase = PurchaseRepository(self.session)
+        self.purchase_unit = PurchaseUnitRepository(self.session)
 
         return self
 
@@ -56,6 +59,9 @@ class UnitOfWork(IUnitOfWork):
 
     async def flush(self):
         await self.session.flush()
+
+    async def refresh(self, instance, attribute_names = None):
+        await self.session.refresh(instance, attribute_names)
 
     async def rollback(self):
         await self.session.rollback()

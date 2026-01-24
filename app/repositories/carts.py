@@ -2,6 +2,7 @@ from sqlalchemy import select, delete
 
 from app.models.carts import CartUnit
 from app.repositories.base_repository import Repository
+from app.utils.logger import logger
 
 
 class CartRepository(Repository):
@@ -13,6 +14,7 @@ class CartRepository(Repository):
         :param filter_by:
         :return:
         """
+        logger.debug(f"Starting CartRepository.get_cart")
         current_user_id = filter_by['current_user_id']
 
         stmt = (select(self.model)
@@ -21,12 +23,13 @@ class CartRepository(Repository):
         items = await self.session.execute(stmt)
         return items.scalars().all()
 
-    async def get_cart_unit(self, **filter_by: dict):
+    async def get_cart_unit(self, **filter_by):
         """
         Получить запись единицы товара из БД.
         :param filter_by:
         :return:
         """
+        logger.debug(f"Starting CartRepository.get_cart_unit")
         user_id = filter_by.get('user_id')
         item_id = filter_by.get('item_id')
 
@@ -38,12 +41,13 @@ class CartRepository(Repository):
         unit = await self.session.execute(stmt)
         return unit.scalar_one_or_none()
 
-    async def delete(self, **filter_by: dict) -> None:
+    async def delete(self, **filter_by) -> None:
         """
         Удалить запись единицы товара из БД.
         :param filter_by:
         :return:
         """
+        logger.debug(f"Starting CartRepository.delete")
         user_id = filter_by.get('user_id')
         cart_unit_id = filter_by.get('cart_unit_id')
 
@@ -59,5 +63,6 @@ class CartRepository(Repository):
         :param where:
         :return:
         """
+        logger.debug(f"Starting CartRepository.delete_all")
         stmt = delete(self.model).where(self.model.user_id == where)
         await self.session.execute(stmt)

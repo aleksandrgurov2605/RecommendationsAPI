@@ -5,15 +5,17 @@ from fastapi import FastAPI, status, Request
 from fastapi.responses import JSONResponse
 
 from app.db.database import Base, engine
-from app.errors.carts_exceptions import CartUnitNotFoundError
+from app.errors.carts_exceptions import CartUnitNotFoundError, NotEnoughItemsError
 from app.errors.categories_exceptions import CategoryParentNotFoundError, CategoryNotFoundError, CategoryParentError
+from app.errors.purchases_exceptions import PurchaseNotFoundError
 from app.errors.users_exceptions import UserNotFoundError, CredentialsError, TokenHasExpiredError, \
     EmailAlreadyTakenError
-from app.errors.items_exceptions import ItemNotFoundError, WrongCategoryNotFoundError
+from app.errors.items_exceptions import ItemNotFoundError, WrongCategoryNotFoundError, ItemHasNoPriceError
 from app.routers.categories import router as categories_router
 from app.routers.users import router as users_router
 from app.routers.items import router as items_router
 from app.routers.carts import router as carts_router
+from app.routers.purchases import router as purchases_router
 from app.models import *  # noqa
 from app.utils.logger import logger
 
@@ -50,6 +52,7 @@ app.include_router(categories_router)
 app.include_router(users_router)
 app.include_router(items_router)
 app.include_router(carts_router)
+app.include_router(purchases_router)
 
 
 @app.exception_handler(CategoryNotFoundError)
@@ -102,7 +105,6 @@ async def wrong_category_id_exception_handler(request: Request, exc: WrongCatego
 
 @app.exception_handler(CredentialsError)
 async def credentials_exception_handler(request: Request, exc: CredentialsError):
-    logger.info(f"token_has_expired_exception_handler")
     return JSONResponse(
         status_code=status.HTTP_401_UNAUTHORIZED,
         content={"detail": exc.message},
@@ -111,7 +113,6 @@ async def credentials_exception_handler(request: Request, exc: CredentialsError)
 
 @app.exception_handler(TokenHasExpiredError)
 async def token_has_expired_exception_handler(request: Request, exc: TokenHasExpiredError):
-    logger.info(f"token_has_expired_exception_handler")
     return JSONResponse(
         status_code=status.HTTP_401_UNAUTHORIZED,
         content={"detail": exc.message},
@@ -120,7 +121,6 @@ async def token_has_expired_exception_handler(request: Request, exc: TokenHasExp
 
 @app.exception_handler(CartUnitNotFoundError)
 async def cart_unit_not_found_exception_handler(request: Request, exc: CartUnitNotFoundError):
-    logger.info(f"cart_unit_not_found_exception_handler")
     return JSONResponse(
         status_code=status.HTTP_404_NOT_FOUND,
         content={"detail": exc.message},
@@ -128,9 +128,29 @@ async def cart_unit_not_found_exception_handler(request: Request, exc: CartUnitN
 
 @app.exception_handler(EmailAlreadyTakenError)
 async def email_already_taken_exception_handler(request: Request, exc: EmailAlreadyTakenError):
-    logger.info(f"email_already_taken_exception_handler")
     return JSONResponse(
         status_code=status.HTTP_409_CONFLICT,
+        content={"detail": exc.message},
+    )
+
+@app.exception_handler(NotEnoughItemsError)
+async def not_enough_items_exception_handler(request: Request, exc: NotEnoughItemsError):
+    return JSONResponse(
+        status_code=status.HTTP_409_CONFLICT,
+        content={"detail": exc.message},
+    )
+
+@app.exception_handler(ItemHasNoPriceError)
+async def item_has_no_price_exception_handler(request: Request, exc: ItemHasNoPriceError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+        content={"detail": exc.message},
+    )
+
+@app.exception_handler(PurchaseNotFoundError)
+async def purchase_not_found_exception_handler(request: Request, exc: PurchaseNotFoundError):
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
         content={"detail": exc.message},
     )
 

@@ -1,8 +1,10 @@
 import logging
 from logging.handlers import RotatingFileHandler
 
+from app.core.config import settings
+
 logger = logging.getLogger("my_library")
-logger.setLevel(logging.INFO)
+logger.setLevel(settings.LOG_LEVEL)
 
 file_formatter = logging.Formatter(
     "%(asctime)s - %(name)s - %(levelname)s - %(message)s [in %(pathname)s:%(lineno)d]"

@@ -6,7 +6,6 @@ from pydantic import BaseModel, Field, ConfigDict
 from app.schemas.items import ItemRead
 
 
-
 class Purchase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -15,10 +14,11 @@ class Purchase(BaseModel):
     status: str = Field(..., description="Текущий статус покупки")
     total_amount: Decimal = Field(..., ge=0, description="Общая стоимость")
     created_at: datetime = Field(..., description="Когда покупка была создана")
-    updated_at: datetime = Field(..., description="Когда последний раз обновляась")
-    purchase_items: list[PurchaseItem] = Field(default_factory=list, description="Список позиций")
+    updated_at: datetime = Field(..., description="Когда последний раз обновлялась")
+    purchase_units: list[PurchaseUnit] = Field(default_factory=list, description="Список позиций")
 
-class PurchaseItem(BaseModel):
+
+class PurchaseUnit(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int = Field(..., description="ID позиции покупки")
@@ -27,3 +27,12 @@ class PurchaseItem(BaseModel):
     unit_price: Decimal = Field(..., ge=0, description="Цена за единицу на момент покупки")
     total_price: Decimal = Field(..., ge=0, description="Сумма по позиции")
     item: ItemRead | None = Field(None, description="Полная информация о товаре")
+
+
+class PurchaseList(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    purchases: list[Purchase] = Field(..., description="Заказы на текущей странице")
+    total: int = Field(ge=0, description="Общее количество заказов")
+    page: int = Field(ge=1, description="Текущая страница")
+    page_size: int = Field(ge=1, description="Размер страницы")

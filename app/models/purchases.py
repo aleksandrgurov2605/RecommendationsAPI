@@ -22,10 +22,15 @@ class Purchase(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
-    user: Mapped["User"] = relationship("User",
-                                        back_populates="purchases")
-    purchase_units: Mapped[list["PurchaseUnit"]] = relationship("PurchaseUnit",
-                                                                back_populates="purchase")
+    user: Mapped["User"] = relationship(
+        "User",
+        back_populates="purchases"
+    )
+    purchase_units: Mapped[list["PurchaseUnit"]] = relationship(
+        "PurchaseUnit",
+        back_populates="purchase",
+        lazy="selectin"
+    )
 
 
 class PurchaseUnit(Base):
@@ -38,7 +43,12 @@ class PurchaseUnit(Base):
     unit_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     total_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
 
-    purchase: Mapped["Purchase"] = relationship("Purchase",
-                                                back_populates="purchase_units")
-    item: Mapped["Item"] = relationship("Item",
-                                        back_populates="purchase_unit")
+    purchase: Mapped["Purchase"] = relationship(
+        "Purchase",
+        back_populates="purchase_units"
+    )
+    item: Mapped["Item"] = relationship(
+        "Item",
+        back_populates="purchase_unit",
+        lazy="selectin"
+    )

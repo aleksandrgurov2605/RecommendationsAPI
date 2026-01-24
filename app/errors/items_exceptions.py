@@ -5,6 +5,7 @@ class ItemNotFoundError(Exception):
         self.message = message
         super().__init__(self.message)
 
+
 class WrongCategoryNotFoundError(Exception):
     """Выбрасывается, когда при создании товара указана категория, отсутствующая в БД."""
 
@@ -12,3 +13,11 @@ class WrongCategoryNotFoundError(Exception):
         self.message = message
         self.code = code
         super().__init__(self.message, self.code)
+
+
+class ItemHasNoPriceError(Exception):
+    """Выбрасывается, когда у товара не указана цена."""
+
+    def __init__(self, message: str = "Item has no price"):
+        self.message = message
+        super().__init__(self.message)
