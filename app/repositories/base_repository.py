@@ -23,11 +23,11 @@ class AbstractRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def update(self, data: dict, where: Any) -> BaseModel:
+    async def update(self, data: dict, id: Any) -> BaseModel:
         raise NotImplementedError
 
     @abstractmethod
-    async def delete(self, where: Any):
+    async def delete(self, id: Any):
         raise NotImplementedError
 
 
@@ -55,35 +55,35 @@ class Repository(AbstractRepository):
         res = await self.session.execute(select(self.model))
         return res.scalars().all()
 
-    async def fetch_one(self, where: int) -> BaseModel | None:
+    async def fetch_one(self, id: int) -> BaseModel | None:
         """
-        Получить одну запись по условию where или None
-        :param where:
+        Получить одну запись по id или None
+        :param id:
         :return:
         """
-        stmt = select(self.model).where(self.model.id==where)
+        stmt = select(self.model).where(self.model.id==id)
         res  = await self.session.execute(stmt)
         return res.scalar_one_or_none()
 
-    async def update(self, data: dict, where: int) -> BaseModel | None:
+    async def update(self, data: dict, id: int) -> BaseModel | None:
         """
         Обновить одну запись по условию filter_by данными из data.
         :param data:
-        :param where:
+        :param id:
         :return:
         """
-        stmt = update(self.model).where(self.model.id==where).values(data).returning(self.model)
+        stmt = update(self.model).where(self.model.id==id).values(data).returning(self.model)
         data = await self.session.execute(stmt)
         res = data.scalar_one()
 
         return res
 
-    async def delete(self, where: int) -> None:
+    async def delete(self, id: int) -> None:
         """
         Удалить одну запись из БД по условию filter_by.
-        :param where:
+        :param id:
         :return:
         """
-        stmt = delete(self.model).where(self.model.id == where)
+        stmt = delete(self.model).where(self.model.id == id)
         await self.session.execute(stmt)
 

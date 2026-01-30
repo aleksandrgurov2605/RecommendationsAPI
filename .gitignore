@@ -15,3 +15,5 @@ wheels/
 /.database.db
 /file
 /app.log
+/seed.py
+/seed_purchase.py

@@ -17,7 +17,7 @@ class CategoryService:
         """
         if category.parent_id is not None:
             async with uow as uow:
-                parent = await uow.category.fetch_one(where=category.parent_id)
+                parent = await uow.category.fetch_one(category.parent_id)
                 if parent is None:
                     raise CategoryParentNotFoundError
         category_dict = category.model_dump()
@@ -52,7 +52,7 @@ class CategoryService:
         :return:
         """
         async with uow as uow:
-            category_to_return = await uow.category.fetch_one(where=category_id)
+            category_to_return = await uow.category.fetch_one(category_id)
             if not category_to_return:
                 raise CategoryNotFoundError
             return CategoryRead.model_validate(category_to_return)
@@ -72,18 +72,18 @@ class CategoryService:
         """
         async with uow as uow:
             # Проверяем существование категории
-            existing_category = await uow.category.fetch_one(where=category_id)
+            existing_category = await uow.category.fetch_one(category_id)
             if not existing_category:
                 raise CategoryNotFoundError
             # Проверяем существование родительской категории
             if category.parent_id is not None:
-                parent = await uow.category.fetch_one(where=category.parent_id)
+                parent = await uow.category.fetch_one(category.parent_id)
                 if parent is None:
                     raise CategoryParentNotFoundError
                 if parent.id == category_id:
                     raise CategoryParentError
             category_data = category.model_dump()
-            category_to_return = await uow.category.update(data=category_data, where=category_id)
+            category_to_return = await uow.category.update(data=category_data, id=category_id)
             if not category_to_return:
                 raise CategoryNotFoundError
             await uow.commit()
@@ -102,9 +102,9 @@ class CategoryService:
         """
         async with uow as uow:
             # Проверяем существование категории
-            existing_category = await uow.category.fetch_one(where=category_id)
+            existing_category = await uow.category.fetch_one(id=category_id)
             if not existing_category:
                 raise CategoryNotFoundError
 
-            await uow.category.delete(where=category_id)
+            await uow.category.delete(id=category_id)
             await uow.commit()

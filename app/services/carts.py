@@ -108,7 +108,7 @@ class CartService:
         :return:
         """
         async with uow as uow:
-            existing_cart_unit = await uow.cart.fetch_one(where=cart_unit_id)
+            existing_cart_unit = await uow.cart.fetch_one(id=cart_unit_id)
             if not existing_cart_unit:
                 raise CartUnitNotFoundError
 
@@ -127,5 +127,5 @@ class CartService:
         :return:
         """
         async with uow as uow:
-            await uow.cart.delete_all(where=current_user.id)
+            await uow.cart.delete_all(id=current_user.id)
             await uow.commit()

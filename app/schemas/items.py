@@ -22,3 +22,4 @@ class ItemRead(ItemBase):
 
     id: int
     is_active: bool = Field(description="Активность товара")
+gt=0,

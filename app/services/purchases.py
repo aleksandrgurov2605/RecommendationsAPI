@@ -66,7 +66,7 @@ class PurchaseService:
                 "user_id": purchase.user_id,
                 "total_amount": purchase.total_amount
             }
-            purchase = await uow.purchase.update(data, where=purchase.id)
+            purchase = await uow.purchase.update(data, id=purchase.id)
 
             await uow.cart.delete_all(current_user.id)
             await uow.commit()

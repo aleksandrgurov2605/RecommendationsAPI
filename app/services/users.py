@@ -63,7 +63,7 @@ class UserService:
         :return:
         """
         async with uow as uow:
-            user_to_return = await uow.user.fetch_one(where=user_id)
+            user_to_return = await uow.user.fetch_one(id=user_id)
             if not user_to_return:
                 raise UserNotFoundError
             return UserRead.model_validate(user_to_return)
@@ -83,13 +83,13 @@ class UserService:
         """
         async with uow as uow:
             # Проверяем существование пользователя
-            existing_user = await uow.user.fetch_one(where=user_id)
+            existing_user = await uow.user.fetch_one(id=user_id)
             if not existing_user:
                 raise UserNotFoundError
             user_data = user.model_dump()
             user_data['password'] = get_password_hash(user_data['password'])
             try:
-                user_to_return = await uow.user.update(data=user_data, where=user_id)
+                user_to_return = await uow.user.update(data=user_data, id=user_id)
             except IntegrityError:
                 raise EmailAlreadyTakenError
             if not user_to_return:
@@ -110,11 +110,11 @@ class UserService:
         """
         async with uow as uow:
             # Проверяем существование пользователя
-            existing_user = await uow.user.fetch_one(where=user_id)
+            existing_user = await uow.user.fetch_one(id=user_id)
             if not existing_user:
                 raise UserNotFoundError
 
-            await uow.user.delete(where=user_id)
+            await uow.user.delete(id=user_id)
             await uow.commit()
 
     @staticmethod

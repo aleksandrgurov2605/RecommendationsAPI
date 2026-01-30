@@ -3,7 +3,7 @@ from logging.handlers import RotatingFileHandler
 
 from app.core.config import settings
 
-logger = logging.getLogger("my_library")
+logger = logging.getLogger("My shop")
 logger.setLevel(settings.LOG_LEVEL)
 
 file_formatter = logging.Formatter(

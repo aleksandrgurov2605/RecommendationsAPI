@@ -30,7 +30,7 @@ class ItemService:
         """
         async with uow as uow:
             # Проверяем существование категории
-            existing_category = await uow.category.fetch_one(where=item.category_id)
+            existing_category = await uow.category.fetch_one(item.category_id)
             if not existing_category:
                 raise WrongCategoryNotFoundError
             item_dict = item.model_dump()
@@ -51,7 +51,7 @@ class ItemService:
         :return:
         """
         async with uow as uow:
-            item_to_return = await uow.item.fetch_one(where=item_id)
+            item_to_return = await uow.item.fetch_one(id=item_id)
             if not item_to_return:
                 raise ItemNotFoundError
             return ItemRead.model_validate(item_to_return)
@@ -71,17 +71,17 @@ class ItemService:
         """
         async with uow as uow:
             # Проверяем существование товара
-            existing_item = await uow.item.fetch_one(where=item_id)
+            existing_item = await uow.item.fetch_one(id=item_id)
             if not existing_item:
                 raise ItemNotFoundError
 
             # Проверяем существование категории
-            existing_category = await uow.category.fetch_one(where=item.category_id)
+            existing_category = await uow.category.fetch_one(id=item.category_id)
             if not existing_category:
                 raise WrongCategoryNotFoundError
 
             item_data = item.model_dump()
-            item_to_return = await uow.item.update(data=item_data, where=item_id)
+            item_to_return = await uow.item.update(data=item_data, id=item_id)
             if not item_to_return:
                 raise ItemNotFoundError
             await uow.commit()
@@ -100,9 +100,9 @@ class ItemService:
         """
         async with uow as uow:
             # Проверяем существование товара
-            existing_item = await uow.item.fetch_one(where=item_id)
+            existing_item = await uow.item.fetch_one(id=item_id)
             if not existing_item:
                 raise ItemNotFoundError
 
-            await uow.item.delete(where=item_id)
+            await uow.item.delete(id=item_id)
             await uow.commit()

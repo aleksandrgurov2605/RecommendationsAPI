@@ -1,10 +1,8 @@
 import time
-from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, status, Request
 from fastapi.responses import JSONResponse
 
-from app.db.database import Base, engine
 from app.errors.carts_exceptions import CartUnitNotFoundError, NotEnoughItemsError
 from app.errors.categories_exceptions import CategoryParentNotFoundError, CategoryNotFoundError, CategoryParentError
 from app.errors.purchases_exceptions import PurchaseNotFoundError
@@ -16,21 +14,11 @@ from app.routers.users import router as users_router
 from app.routers.items import router as items_router
 from app.routers.carts import router as carts_router
 from app.routers.purchases import router as purchases_router
+from app.routers.recommendations import router as recommendations_router
 from app.models import *  # noqa
 from app.utils.logger import logger
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
-    yield
-
-    await engine.dispose()
-
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 
 @app.middleware("http")
@@ -53,6 +41,7 @@ app.include_router(users_router)
 app.include_router(items_router)
 app.include_router(carts_router)
 app.include_router(purchases_router)
+app.include_router(recommendations_router)
 
 
 @app.exception_handler(CategoryNotFoundError)
@@ -126,12 +115,14 @@ async def cart_unit_not_found_exception_handler(request: Request, exc: CartUnitN
         content={"detail": exc.message},
     )
 
+
 @app.exception_handler(EmailAlreadyTakenError)
 async def email_already_taken_exception_handler(request: Request, exc: EmailAlreadyTakenError):
     return JSONResponse(
         status_code=status.HTTP_409_CONFLICT,
         content={"detail": exc.message},
     )
+
 
 @app.exception_handler(NotEnoughItemsError)
 async def not_enough_items_exception_handler(request: Request, exc: NotEnoughItemsError):
@@ -140,12 +131,14 @@ async def not_enough_items_exception_handler(request: Request, exc: NotEnoughIte
         content={"detail": exc.message},
     )
 
+
 @app.exception_handler(ItemHasNoPriceError)
 async def item_has_no_price_exception_handler(request: Request, exc: ItemHasNoPriceError):
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         content={"detail": exc.message},
     )
+
 
 @app.exception_handler(PurchaseNotFoundError)
 async def purchase_not_found_exception_handler(request: Request, exc: PurchaseNotFoundError):
