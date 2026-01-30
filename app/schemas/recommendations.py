@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Recommendation(BaseModel):
@@ -8,6 +8,9 @@ class Recommendation(BaseModel):
     user_id: int = Field(..., description="ID пользователя")
     item_id: int = Field(..., description="ID товара")
 
+
 class RecommendationCreate(BaseModel):
     user_id: int = Field(..., gt=0, description="ID пользователя")
-    min_pair_count: int = Field(default=5, gt=0, description="Минимальное количество совместных покупок")
+    min_pair_count: int = Field(
+        default=5, gt=0, description="Минимальное количество совместных покупок"
+    )

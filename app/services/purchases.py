@@ -1,9 +1,9 @@
 from decimal import Decimal
 
 from app.errors.carts_exceptions import CartUnitNotFoundError, NotEnoughItemsError
-from app.errors.items_exceptions import ItemNotFoundError, ItemHasNoPriceError
+from app.errors.items_exceptions import ItemHasNoPriceError, ItemNotFoundError
 from app.errors.purchases_exceptions import PurchaseNotFoundError
-from app.schemas.purchases import Purchase, PurchaseUnit, PurchaseList
+from app.schemas.purchases import Purchase, PurchaseList
 from app.schemas.users import UserRead
 from app.utils.logger import logger
 from app.utils.unitofwork import IUnitOfWork
@@ -12,8 +12,8 @@ from app.utils.unitofwork import IUnitOfWork
 class PurchaseService:
     @staticmethod
     async def checkout_purchase(
-            uow: IUnitOfWork,
-            current_user: UserRead,
+        uow: IUnitOfWork,
+        current_user: UserRead,
     ) -> Purchase:
         """
         Создать заказ на основе текущей корзины пользователя.
@@ -22,16 +22,15 @@ class PurchaseService:
         :param current_user:
         :return:
         """
-        logger.info(f"PurchaseService: Создать заказ на основе текущей корзины пользователя {current_user.id}.")
+        logger.info(
+            f"PurchaseService: Создать заказ "
+            f"на основе текущей корзины пользователя {current_user.id}."
+        )
         async with uow as uow:
             cart_units = await uow.cart.get_cart(current_user_id=current_user.id)
             if not cart_units:
                 raise CartUnitNotFoundError
-            data = {
-                "status": "Created",
-                "user_id": current_user.id,
-                "total_amount": 0
-            }
+            data = {"status": "Created", "user_id": current_user.id, "total_amount": 0}
             purchase = await uow.purchase.add_one(data)
 
             total_amount = Decimal("0")
@@ -54,7 +53,7 @@ class PurchaseService:
                     "item_id": cart_unit.item_id,
                     "quantity": cart_unit.quantity,
                     "unit_price": unit_price,
-                    "total_price": total_price
+                    "total_price": total_price,
                 }
                 purchase_unit = await uow.purchase_unit.add_one(data)
                 purchase.purchase_units.append(purchase_unit)
@@ -64,7 +63,7 @@ class PurchaseService:
             data = {
                 "status": purchase.status,
                 "user_id": purchase.user_id,
-                "total_amount": purchase.total_amount
+                "total_amount": purchase.total_amount,
             }
             purchase = await uow.purchase.update(data, id=purchase.id)
 
@@ -80,10 +79,7 @@ class PurchaseService:
 
     @staticmethod
     async def get_list_purchases(
-            uow: IUnitOfWork,
-            current_user: UserRead,
-            page: int,
-            page_size: int
+        uow: IUnitOfWork, current_user: UserRead, page: int, page_size: int
     ) -> PurchaseList:
         """
         Получить все заказы текущего пользователя.
@@ -93,23 +89,24 @@ class PurchaseService:
         :param current_user:
         :return:
         """
-        logger.info(f"PurchaseService: Получить все заказы текущего пользователя {current_user.id}.")
+        logger.info(
+            f"PurchaseService: Получить все заказы "
+            f"текущего пользователя {current_user.id}."
+        )
         async with uow as uow:
             purchases = await uow.purchase.get_purchases(
-                current_user_id=current_user.id,
-                page=page,
-                page_size=page_size
+                current_user_id=current_user.id, page=page, page_size=page_size
             )
             total = await uow.purchase.get_count_user_purchases(current_user.id)
             purchases = [Purchase.model_validate(purchase) for purchase in purchases]
-            purchase_list = PurchaseList(purchases=purchases, total=total[0], page=page, page_size=page_size)
+            purchase_list = PurchaseList(
+                purchases=purchases, total=total[0], page=page, page_size=page_size
+            )
         return purchase_list
 
     @staticmethod
     async def get_purchase(
-            uow: IUnitOfWork,
-            current_user: UserRead,
-            purchase_id: int
+        uow: IUnitOfWork, current_user: UserRead, purchase_id: int
     ) -> Purchase:
         """
         Получить детальную информацию по заказу пользователя.
@@ -118,7 +115,10 @@ class PurchaseService:
         :param current_user:
         :return:
         """
-        logger.debug(f"PurchaseService: Получить детальную информацию по заказу пользователя {current_user.id}.")
+        logger.debug(
+            f"PurchaseService: Получить детальную информацию "
+            f"по заказу пользователя {current_user.id}."
+        )
         async with uow as uow:
             purchase_to_return = await uow.purchase.fetch_one(purchase_id)
             if not purchase_to_return:

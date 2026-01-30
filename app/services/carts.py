@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from app.errors.carts_exceptions import CartUnitNotFoundError
 from app.errors.items_exceptions import ItemNotFoundError
-from app.schemas.carts import CartUnitRead, CartUnitUpdate, Cart, CartUnitCreate
+from app.schemas.carts import Cart, CartUnitCreate, CartUnitRead, CartUnitUpdate
 from app.schemas.users import UserRead
 from app.utils.unitofwork import IUnitOfWork
 
@@ -10,9 +10,7 @@ from app.utils.unitofwork import IUnitOfWork
 class CartService:
     @staticmethod
     async def add_item_to_cart(
-            uow: IUnitOfWork,
-            current_user: UserRead,
-            cart_unit: CartUnitCreate
+        uow: IUnitOfWork, current_user: UserRead, cart_unit: CartUnitCreate
     ) -> CartUnitRead:
         """
         Добавить товар в корзину.
@@ -25,21 +23,24 @@ class CartService:
             item = await uow.item.get_active_item(item_id=cart_unit.item_id)
             if not item:
                 raise ItemNotFoundError
-            cart_unit_from_db = await uow.cart.get_cart_unit(user_id=current_user.id, item_id=cart_unit.item_id)
+            cart_unit_from_db = await uow.cart.get_cart_unit(
+                user_id=current_user.id, item_id=cart_unit.item_id
+            )
             if cart_unit_from_db:
                 cart_unit_from_db.quantity += cart_unit.quantity
             else:
-                data = dict(user_id=current_user.id, item_id=cart_unit.item_id, quantity=cart_unit.quantity)
+                data = dict(
+                    user_id=current_user.id,
+                    item_id=cart_unit.item_id,
+                    quantity=cart_unit.quantity,
+                )
                 cart_unit_from_db = await uow.cart.add_one(data)
             unit_to_return = CartUnitRead.model_validate(cart_unit_from_db)
             await uow.commit()
         return unit_to_return
 
     @staticmethod
-    async def get_cart(
-            uow: IUnitOfWork,
-            current_user: UserRead
-    ) -> Cart:
+    async def get_cart(uow: IUnitOfWork, current_user: UserRead) -> Cart:
         """
         Получить корзину пользователя.
         :param uow:
@@ -52,8 +53,12 @@ class CartService:
 
         total_quantity = sum(unit.quantity for unit in units)
         price_units = (
-            Decimal(unit.quantity) *
-            (Decimal(unit.item.price) if unit.item.price is not None else Decimal("0"))
+            Decimal(unit.quantity)
+            * (
+                Decimal(unit.item.price)
+                if unit.item.price is not None
+                else Decimal("0")
+            )
             for unit in units
         )
         total_price_decimal = sum(price_units, Decimal("0"))
@@ -62,15 +67,15 @@ class CartService:
             user_id=current_user.id,
             units=units,
             total_quantity=total_quantity,
-            total_price=total_price_decimal
+            total_price=total_price_decimal,
         )
 
     @staticmethod
     async def update_cart_unit(
-            item_id: int,
-            uow: IUnitOfWork,
-            current_user: UserRead,
-            cart_unit: CartUnitUpdate
+        item_id: int,
+        uow: IUnitOfWork,
+        current_user: UserRead,
+        cart_unit: CartUnitUpdate,
     ) -> CartUnitRead:
         """
         Обновить единицу корзины.
@@ -84,21 +89,23 @@ class CartService:
             item = await uow.item.get_active_item(item_id=item_id)
             if not item:
                 raise ItemNotFoundError
-            cart_unit_from_db = await uow.cart.get_cart_unit(user_id=current_user.id, item_id=item_id)
+            cart_unit_from_db = await uow.cart.get_cart_unit(
+                user_id=current_user.id, item_id=item_id
+            )
             if not cart_unit_from_db:
                 raise CartUnitNotFoundError
             cart_unit_from_db.quantity = cart_unit.quantity
             await uow.commit()
 
-            cart_unit_from_db = await uow.cart.get_cart_unit(user_id=current_user.id, item_id=item_id)
+            cart_unit_from_db = await uow.cart.get_cart_unit(
+                user_id=current_user.id, item_id=item_id
+            )
             cart_unit_to_return = CartUnitRead.model_validate(cart_unit_from_db)
             return cart_unit_to_return
 
     @staticmethod
     async def delete_cart_unit(
-            uow: IUnitOfWork,
-            current_user: UserRead,
-            cart_unit_id: int
+        uow: IUnitOfWork, current_user: UserRead, cart_unit_id: int
     ) -> None:
         """
         Удалить единицу корзины.
@@ -116,10 +123,7 @@ class CartService:
             await uow.commit()
 
     @staticmethod
-    async def delete_all_cart_units(
-            uow: IUnitOfWork,
-            current_user: UserRead
-    ) -> None:
+    async def delete_all_cart_units(uow: IUnitOfWork, current_user: UserRead) -> None:
         """
         Очистить корзину пользователя.
         :param uow:

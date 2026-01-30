@@ -12,12 +12,15 @@ class Category(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str]
     is_active: Mapped[bool] = mapped_column(default=True)
-    parent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("categories.id"), nullable=True)
+    parent_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("categories.id"), nullable=True
+    )
 
-    items: Mapped[list["Item"]] = relationship("Item", back_populates="category")
+    items: Mapped[list["Item"]] = relationship("Item", back_populates="category")  # noqa: F821
 
-    parent: Mapped[Optional["Category"]] = relationship("Category",
-                                                        back_populates="children",
-                                                        remote_side="Category.id")
-    children: Mapped[list["Category"]] = relationship("Category",
-                                                      back_populates="parent")
+    parent: Mapped[Optional["Category"]] = relationship(
+        "Category", back_populates="children", remote_side="Category.id"
+    )
+    children: Mapped[list["Category"]] = relationship(
+        "Category", back_populates="parent"
+    )

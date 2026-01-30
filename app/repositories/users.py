@@ -3,7 +3,6 @@ from sqlalchemy import select
 
 from app.models.users import User
 from app.repositories.base_repository import Repository
-from app.utils.logger import logger
 
 
 class UserRepository(Repository):
@@ -15,8 +14,11 @@ class UserRepository(Repository):
         :param email:
         :return:
         """
-        logger.debug(f"Starting UserRepository.get_user")
-        stmt = select(self.model).where(self.model.email == email).where(self.model.is_active == True)
+        stmt = (
+            select(self.model)
+            .where(self.model.email == email)
+            .where(self.model.is_active == True)  # noqa: E712
+        )
 
-        res  = await self.session.execute(stmt)
+        res = await self.session.execute(stmt)
         return res.scalar_one_or_none()

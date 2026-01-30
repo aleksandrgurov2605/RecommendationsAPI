@@ -1,21 +1,17 @@
-from fastapi import APIRouter, status, Response
+from fastapi import APIRouter, Response, status
 
 from app.dependencies.dependencies import UOWDep, UserDep
 from app.schemas.carts import Cart, CartUnitCreate, CartUnitRead, CartUnitUpdate
-
 from app.services.carts import CartService
 from app.utils.logger import logger
 
-router = APIRouter(
-    prefix="/cart",
-    tags=["cart"]
-)
+router = APIRouter(prefix="/cart", tags=["cart"])
 
 
 @router.get("/", response_model=Cart)
 async def get_cart(
-        uow: UOWDep,
-        current_user: UserDep,
+    uow: UOWDep,
+    current_user: UserDep,
 ):
     """
     Получить корзину пользователя.
@@ -29,11 +25,7 @@ async def get_cart(
 
 
 @router.post("/units", response_model=CartUnitRead, status_code=status.HTTP_201_CREATED)
-async def add_item_to_cart(
-        payload: CartUnitCreate,
-        uow: UOWDep,
-        current_user: UserDep
-):
+async def add_item_to_cart(payload: CartUnitCreate, uow: UOWDep, current_user: UserDep):
     """
     Добавить товар в корзину.
     :param payload:
@@ -48,10 +40,7 @@ async def add_item_to_cart(
 
 @router.put("/units/{item_id}", response_model=CartUnitRead)
 async def update_cart_unit(
-        item_id: int,
-        payload: CartUnitUpdate,
-        uow: UOWDep,
-        current_user: UserDep
+    item_id: int, payload: CartUnitUpdate, uow: UOWDep, current_user: UserDep
 ):
     """
     Обновить количество товара в корзине.
@@ -62,15 +51,15 @@ async def update_cart_unit(
     :return:
     """
     logger.info(f"Обновить количество товара {item_id} в корзине.")
-    updated_unit = await CartService.update_cart_unit(item_id, uow, current_user, payload)
+    updated_unit = await CartService.update_cart_unit(
+        item_id, uow, current_user, payload
+    )
     return updated_unit
 
 
 @router.delete("/units/{cart_unit_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_cart_unit_from_cart(
-        cart_unit_id: int,
-        uow: UOWDep,
-        current_user: UserDep
+    cart_unit_id: int, uow: UOWDep, current_user: UserDep
 ):
     """
     Удалить товар из корзины.
@@ -85,10 +74,7 @@ async def remove_cart_unit_from_cart(
 
 
 @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
-async def clear_cart(
-        uow: UOWDep,
-        current_user: UserDep
-):
+async def clear_cart(uow: UOWDep, current_user: UserDep):
     """
     Удалить все товары из корзины.
     :param uow:
@@ -98,5 +84,3 @@ async def clear_cart(
     logger.info(f"Удалить все товары из корзины пользователя {current_user.id}.")
     await CartService.delete_all_cart_units(uow, current_user)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-

@@ -1,5 +1,7 @@
 class CategoryNotFoundError(Exception):
-    """Выбрасывается, когда категория не найдена."""
+    """
+    Выбрасывается, когда категория не найдена.
+    """
 
     def __init__(self, message: str = "Category not found"):
         self.message = message
@@ -7,7 +9,9 @@ class CategoryNotFoundError(Exception):
 
 
 class CategoryParentNotFoundError(Exception):
-    """Выбрасывается, когда родительская категория не найдена."""
+    """
+    Выбрасывается, когда родительская категория не найдена.
+    """
 
     def __init__(self, message: str = "Parent category not found"):
         self.message = message
@@ -15,7 +19,9 @@ class CategoryParentNotFoundError(Exception):
 
 
 class CategoryParentError(Exception):
-    """Выбрасывается, когда категория указывает на саму себя в качестве родительской."""
+    """
+    Выбрасывается, когда категория указывает на саму себя в качестве родительской.
+    """
 
     def __init__(self, message: str = "Category can't be its own parent"):
         self.message = message

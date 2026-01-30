@@ -3,6 +3,7 @@ from pwdlib import PasswordHash
 # Инициализация с рекомендуемыми настройками (по умолчанию Argon2)
 password_hash = PasswordHash.recommended()
 
+
 def get_password_hash(password: str) -> str:
     """
     Хеширование пароля.

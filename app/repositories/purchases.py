@@ -1,10 +1,9 @@
-from sqlalchemy import select, func, cast, Float
+from sqlalchemy import Float, cast, func, select
 from sqlalchemy.orm import aliased
 
 from app.models import Item
 from app.models.purchases import Purchase, PurchaseUnit
 from app.repositories.base_repository import Repository
-from app.utils.logger import logger
 
 
 class PurchaseRepository(Repository):
@@ -16,16 +15,17 @@ class PurchaseRepository(Repository):
         :param filter_by:
         :return:
         """
-        logger.debug(f"Starting PurchaseRepository.get_purchases")
-        current_user_id = filter_by['current_user_id']
-        page = filter_by['page']
-        page_size = filter_by['page_size']
+        current_user_id = filter_by["current_user_id"]
+        page = filter_by["page"]
+        page_size = filter_by["page_size"]
 
-        stmt = (select(self.model)
-                .where(self.model.user_id == current_user_id)
-                .order_by(self.model.created_at.desc())
-                .offset((page - 1) * page_size)
-                .limit(page_size))
+        stmt = (
+            select(self.model)
+            .where(self.model.user_id == current_user_id)
+            .order_by(self.model.created_at.desc())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+        )
 
         purchases = await self.session.execute(stmt)
         return purchases.scalars().all()
@@ -35,7 +35,6 @@ class PurchaseRepository(Repository):
         Получить общее количество покупок.
         :return:
         """
-        logger.debug(f"Starting PurchaseRepository.{self.get_count_purchases.__name__}")
         total_tx_stmt = select(func.count(Purchase.id))
         total_transactions = (await self.session.execute(total_tx_stmt)).scalar() or 1
         return total_transactions
@@ -45,8 +44,9 @@ class PurchaseRepository(Repository):
         Получить все записи из таблицы в БД, списком
         :return:
         """
-        logger.debug(f"Starting PurchaseRepository.get_count_user_purchases")
-        stmt = select(func.count(self.model.id)).where(self.model.user_id == current_user_id)
+        stmt = select(func.count(self.model.id)).where(
+            self.model.user_id == current_user_id
+        )
         count = await self.session.execute(stmt)
         return count.first()
 
@@ -60,8 +60,6 @@ class PurchaseUnitRepository(Repository):
         :param filter_by:
         :return:
         """
-        logger.debug(f"Starting RecommendationRepository.{self.generate_recommendations.__name__}")
-
         user_id = filter_by["user_id"]
         total_transactions = filter_by["total_transactions"]
         min_pair_count = filter_by["min_pair_count"]
@@ -82,7 +80,7 @@ class PurchaseUnitRepository(Repository):
         item_counts_cte = (
             select(
                 self.model.item_id.label("item_id"),
-                func.count(self.model.id).label("total_cnt")
+                func.count(self.model.id).label("total_cnt"),
             )
             .group_by(self.model.item_id)
             .cte("item_counts")
@@ -98,14 +96,16 @@ class PurchaseUnitRepository(Repository):
                 pu1.item_id.label("id_a"),
                 pu2.item_id.label("id_b"),
                 (
-                        cast(func.count(pu1.id) * total_transactions, Float) /
-                        (ic1.c.total_cnt * ic2.c.total_cnt)
-                ).label("lift_value")
+                        cast(func.count(pu1.id) * total_transactions, Float)
+                        / (ic1.c.total_cnt * ic2.c.total_cnt)
+                ).label("lift_value"),
             )
             .join(pu2, pu1.purchase_id == pu2.purchase_id)
             .join(ic1, ic1.c.item_id == pu1.item_id)
             .join(ic2, ic2.c.item_id == pu2.item_id)
-            .where(pu1.item_id != pu2.item_id)  # Нам нужны оба направления (A->B и B->A)
+            .where(
+                pu1.item_id != pu2.item_id
+            )  # Нам нужны оба направления (A->B и B->A)  # noqa: E501
             .group_by(pu1.item_id, pu2.item_id, ic1.c.total_cnt, ic2.c.total_cnt)
             .having(func.count(pu1.id) >= min_pair_count)
             .cte("knowledge_base")
@@ -119,7 +119,7 @@ class PurchaseUnitRepository(Repository):
             select(
                 item_info.id.label("recommended_item_id"),
                 item_info.name.label("recommended_item_name"),
-                func.max(kb.c.lift_value).label("lift")
+                func.max(kb.c.lift_value).label("lift"),
             )
             .join(item_info, item_info.id == kb.c.id_b)
             # Условие: товар А из пары уже куплен пользователем
@@ -133,4 +133,3 @@ class PurchaseUnitRepository(Repository):
 
         result = await self.session.execute(final_stmt)
         return result.mappings().all()
-

@@ -1,23 +1,24 @@
 import pytest_asyncio
 
-from app.models import Item, Category
+from app.models import Category, Item
 
 items = [
     {
-      "name": "iPhone 17",
-      "description": "The iPhone 17 features a 6.3-inch ProMotion OLED display with 120Hz refresh",
-      "price": 799,
-      "stock": 10,
-      "category_id": 2
+        "name": "iPhone 17",
+        "description": "The iPhone 17 features a 6.3-inch ProMotion OLED display",
+        "price": 799,
+        "stock": 10,
+        "category_id": 2,
     },
     {
-      "name": "Galaxy S25 Ultra",
-      "description": "The Samsung Galaxy S25 Ultra features a 6.9 QHD+ AMOLED display, Snapdragon 8 Elite chip",
-      "price": 900,
-      "stock": 13,
-      "category_id": 2
-    }
+        "name": "Galaxy S25 Ultra",
+        "description": "The Samsung Galaxy S25 Ultra",
+        "price": 900,
+        "stock": 13,
+        "category_id": 2,
+    },
 ]
+
 
 @pytest_asyncio.fixture
 async def setup_database(session_factory):
@@ -39,4 +40,3 @@ async def setup_database(session_factory):
         session.add(item2)
 
         await session.commit()
-

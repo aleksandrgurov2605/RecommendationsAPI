@@ -1,5 +1,6 @@
 import pytest_asyncio
-from app.models import User, Item, Category
+
+from app.models import Category, Item, User
 from app.utils.auth import create_access_token
 from app.utils.security import get_password_hash
 
@@ -8,7 +9,11 @@ from app.utils.security import get_password_hash
 async def setup_cart_db(session_factory):
     async with session_factory() as session:
         # 1. Создаем пользователя
-        user = User(email="cart_user@mail.com", name="CartOwner", password=get_password_hash("password"))
+        user = User(
+            email="cart_user@mail.com",
+            name="CartOwner",
+            password=get_password_hash("password"),
+        )
         session.add(user)
 
         # 2. Создаем категорию и товары
@@ -21,14 +26,14 @@ async def setup_cart_db(session_factory):
             price=1000,
             category_id=cat.id,
             stock=10,
-            description="Test phone description"
+            description="Test phone description",
         )
         item2 = Item(
             name="Laptop",
             price=2000,
             category_id=cat.id,
             stock=10,
-            description="Test laptop description"
+            description="Test laptop description",
         )
         session.add_all([item1, item2])
 

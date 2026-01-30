@@ -13,7 +13,11 @@ class User(Base):
     password: Mapped[str]
     is_active: Mapped[bool] = mapped_column(default=True)
 
-    purchases: Mapped[list["Purchase"]] = relationship("Purchase",
-                                                       back_populates="user")
-    cart_units: Mapped[list["CartUnit"]] = relationship("CartUnit",
-                                                        back_populates="user")
+    purchases: Mapped[list["Purchase"]] = relationship(  # noqa: F821
+        "Purchase",  # noqa: F821
+        back_populates="user",
+    )
+    cart_units: Mapped[list["CartUnit"]] = relationship(  # noqa: F821
+        "CartUnit",  # noqa: F821
+        back_populates="user",
+    )

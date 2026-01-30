@@ -4,12 +4,15 @@ import pytest
 @pytest.mark.parametrize(
     "data, expected_status",
     [
-        ({"email": "fake_email1@fakemail.com", "name": "name", "password": "password"}, 201),
-        ({"email": "fake_email2@fakemail.com", "name": "name", "password": "password"}, 201),
+        ({"email": "fake1@mail.com", "name": "name", "password": "password"}, 201),
+        ({"email": "fake2@mail.com", "name": "name", "password": "password"}, 201),
         ({"email": "incorrect_email", "name": "name", "password": "password"}, 422),
-        ({"email": "fake_email5@fakemail.com", "name": "", "password": "password"}, 422),
-        ({"email": "fake_email6@fakemail.com", "name": "e", "password": "password"}, 422),
-        ({"email": "fake_email_prepair@fakemail.com", "name": "Duplicate", "password": "password"}, 409),
+        ({"email": "fake5@mail.com", "name": "", "password": "password"}, 422),
+        ({"email": "fake_email6@mail.com", "name": "e", "password": "password"}, 422),
+        (
+            {"email": "prepair@mail.com", "name": "Duplicate", "password": "password"},
+            409,
+        ),
     ],
     ids=[
         "success",
@@ -17,8 +20,8 @@ import pytest
         "incorrect_email",
         "empty_name",
         "name_too_short",
-        "already_exist"
-    ]
+        "already_exist",
+    ],
 )
 @pytest.mark.asyncio
 async def test_create_user(client, setup_database, data, expected_status):
@@ -44,13 +47,12 @@ async def test_get_all_users(client, setup_database):
         (1, 200, "User"),
         (999, 404, None),
     ],
-    ids=[
-        "success",
-        "wrong ID"
-    ]
+    ids=["success", "wrong ID"],
 )
 @pytest.mark.asyncio
-async def test_get_user_by_id(client, setup_database, user_id, expected_status, expected_name):
+async def test_get_user_by_id(
+    client, setup_database, user_id, expected_status, expected_name
+):
     r = await client.get(f"/users/{user_id}")
     assert r.status_code == expected_status
     if expected_status == 200:
@@ -60,20 +62,17 @@ async def test_get_user_by_id(client, setup_database, user_id, expected_status, 
 @pytest.mark.parametrize(
     "user_id, update_data, expected_status",
     [
-        (1, {"email": "fake_email1@fakemail.com", "name": "name", "password": "password"}, 200),
-        (2, {"email": "fake_email1@fakemail.com", "name": "name", "password": "password"}, 200),
-        (999, {"email": "fake_email1@fakemail.com", "name": "name", "password": "password"}, 404),
-        (1, {"email": "fake_email1@fakemail.com", "name": "", "password": "password"}, 422),
+        (1, {"email": "fake1@mail.com", "name": "name", "password": "password"}, 200),
+        (2, {"email": "fake2@mail.com", "name": "name", "password": "password"}, 200),
+        (999, {"email": "fake1@mail.com", "name": "name", "password": "password"}, 404),
+        (1, {"email": "fake1@mail.com", "name": "", "password": "password"}, 422),
     ],
-    ids=[
-        "success",
-        "success",
-        "user not found",
-        "name_too_short"
-    ]
+    ids=["success", "success", "user not found", "name_too_short"],
 )
 @pytest.mark.asyncio
-async def test_update_user(client, setup_database, auth_headers, user_id, update_data, expected_status):
+async def test_update_user(
+    client, setup_database, auth_headers, user_id, update_data, expected_status
+):
     r = await client.put(f"/users/{user_id}", json=update_data, headers=auth_headers)
     assert r.status_code == expected_status
     if expected_status == 200:
@@ -86,13 +85,12 @@ async def test_update_user(client, setup_database, auth_headers, user_id, update
         (1, 204),
         (999, 404),
     ],
-    ids=[
-        "success",
-        "user not found"
-    ]
+    ids=["success", "user not found"],
 )
 @pytest.mark.asyncio
-async def test_delete_user(client, setup_database, auth_headers, user_id, expected_status):
+async def test_delete_user(
+    client, setup_database, auth_headers, user_id, expected_status
+):
     # Удаление
     r = await client.delete(f"/users/{user_id}", headers=auth_headers)
     assert r.status_code == expected_status

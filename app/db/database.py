@@ -1,6 +1,7 @@
 import os
+
 from sqlalchemy import NullPool
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import settings
@@ -10,14 +11,16 @@ if settings.MODE == "TEST":
     DATABASE_PARAMS = {"poolclass": NullPool}
 else:
     DATABASE_URL = settings.DATABASE_URL
-    IS_WINDOWS = os.name == 'nt'
+    IS_WINDOWS = os.name == "nt"
     DATABASE_PARAMS = {}
     if IS_WINDOWS:
         DATABASE_PARAMS["poolclass"] = NullPool
 
 engine = create_async_engine(settings.DATABASE_URL, **DATABASE_PARAMS)
 
-async_session_maker = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+async_session_maker = async_sessionmaker(
+    engine, expire_on_commit=False, class_=AsyncSession
+)
 
 
 class Base(DeclarativeBase):

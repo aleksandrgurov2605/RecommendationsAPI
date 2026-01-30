@@ -1,4 +1,6 @@
-from fastapi import APIRouter, status, Depends, Body
+from typing import Annotated
+
+from fastapi import APIRouter, Body, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.dependencies.dependencies import UOWDep, UserDep
@@ -51,7 +53,9 @@ async def get_user_by_id(uow: UOWDep, user_id: int):
 
 
 @router.put("/{user_id}", response_model=UserRead)
-async def update_user(uow: UOWDep, current_user: UserDep, user_id: int, user: UserCreate):
+async def update_user(
+    uow: UOWDep, current_user: UserDep, user_id: int, user: UserCreate
+):
     """
     Обновить пользователя по id.
     :param uow:
@@ -78,20 +82,26 @@ async def delete_user(uow: UOWDep, current_user: UserDep, user_id: int):
 
 
 @router.post("/token")
-async def login(uow: UOWDep, form_data: OAuth2PasswordRequestForm = Depends()) -> dict[str, str]:
+async def login(
+    uow: UOWDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+) -> dict[str, str]:
     """
     Аутентифицировать пользователя и получить access_token и refresh_token.
     :param uow:
     :param form_data:
     :return:
     """
-    logger.info("Аутентифицировать пользователя и получить access_token и refresh_token.")
+    logger.info(
+        "Аутентифицировать пользователя и получить access_token и refresh_token."
+    )
     result = await UserService.login(uow, form_data)
     return result
 
 
 @router.post("/refresh-token")
-async def refresh_token(uow: UOWDep, current_user: UserDep, user_refresh_token: str = Body(embed=True)):
+async def refresh_token(
+    uow: UOWDep, current_user: UserDep, user_refresh_token: str = Body(embed=True)
+):
     """
     Обновляет access_token с помощью refresh_token.
     :param uow:

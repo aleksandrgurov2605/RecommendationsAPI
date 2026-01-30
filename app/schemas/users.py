@@ -1,9 +1,11 @@
-from pydantic import BaseModel, EmailStr, Field, ConfigDict, UUID4
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class UserBase(BaseModel):
     email: EmailStr = Field(description="Email пользователя")
-    name: str = Field(min_length=2, max_length=40, description="Имя пользователя(2-40 символов)")
+    name: str = Field(
+        min_length=2, max_length=40, description="Имя пользователя(2-40 символов)"
+    )
 
 
 class UserCreate(UserBase):

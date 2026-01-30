@@ -11,7 +11,11 @@ from app.utils.security import get_password_hash
 async def setup_purchase_data(session_factory):
     """Создает пользователя и товары с фиксированным остатком."""
     async with session_factory() as session:
-        user = User(email="cart_user@mail.com", name="CartOwner", password=get_password_hash("password"))
+        user = User(
+            email="cart_user@mail.com",
+            name="CartOwner",
+            password=get_password_hash("password"),
+        )
 
         cat = Category(name="Electronics")
         session.add(cat)
@@ -24,7 +28,7 @@ async def setup_purchase_data(session_factory):
             category_id=cat.id,
             stock=10,
             is_active=True,
-            description="Test Laptop description"
+            description="Test Laptop description",
         )
         item2 = Item(
             name="Mouse",
@@ -32,7 +36,7 @@ async def setup_purchase_data(session_factory):
             category_id=cat.id,
             stock=10,
             is_active=True,
-            description="Test Mouse description"
+            description="Test Mouse description",
         )
 
         session.add_all([user, item1, item2])
@@ -48,4 +52,3 @@ async def purchase_auth_headers(setup_purchase_data):
     user = setup_purchase_data["user"]
     token = create_access_token({"sub": user.email})
     return {"Authorization": f"Bearer {token}"}
-

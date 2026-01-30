@@ -15,4 +15,3 @@ async def setup_database(session_factory):
         session.add(category2)
 
         await session.commit()
-

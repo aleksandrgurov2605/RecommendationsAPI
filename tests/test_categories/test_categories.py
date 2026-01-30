@@ -17,8 +17,8 @@ import pytest
         "success",
         "non_existent_parent",
         "empty_name",
-        "name_too_short"
-    ]
+        "name_too_short",
+    ],
 )
 @pytest.mark.asyncio
 async def test_create_category(client, setup_database, data, expected_status):
@@ -44,13 +44,12 @@ async def test_get_all_categories(client, setup_database):
         (1, 200, "Электроника"),
         (999, 404, None),
     ],
-    ids=[
-        "success",
-        "wrong ID"
-    ]
+    ids=["success", "wrong ID"],
 )
 @pytest.mark.asyncio
-async def test_get_category_by_id(client, setup_database, category_id, expected_status, expected_name):
+async def test_get_category_by_id(
+    client, setup_database, category_id, expected_status, expected_name
+):
     r = await client.get(f"/categories/{category_id}")
     assert r.status_code == expected_status
     if expected_status == 200:
@@ -65,15 +64,12 @@ async def test_get_category_by_id(client, setup_database, category_id, expected_
         (999, {"name": "Ghost", "parent_id": None}, 404),  # Ошибка: категории нет
         (1, {"name": "A", "parent_id": None}, 422),  # Ошибка: слишком короткое имя
     ],
-    ids=[
-        "success",
-        "success",
-        "category not found",
-        "name_too_short"
-    ]
+    ids=["success", "success", "category not found", "name_too_short"],
 )
 @pytest.mark.asyncio
-async def test_update_category(client, setup_database, category_id, update_data, expected_status):
+async def test_update_category(
+    client, setup_database, category_id, update_data, expected_status
+):
     r = await client.put(f"/categories/{category_id}", json=update_data)
     assert r.status_code == expected_status
     if expected_status == 200:
@@ -86,10 +82,7 @@ async def test_update_category(client, setup_database, category_id, update_data,
         (1, 204),
         (999, 404),
     ],
-    ids=[
-        "success",
-        "category not found"
-    ]
+    ids=["success", "category not found"],
 )
 @pytest.mark.asyncio
 async def test_delete_category(client, setup_database, category_id, expected_status):

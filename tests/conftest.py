@@ -1,12 +1,14 @@
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.pool import StaticPool
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import StaticPool
 
 from app.db.database import Base
 from app.main import app as prod_app
-from app.models import Category  # noqa
-from app.models import User  # noqa
+from app.models import (
+    Category,  # noqa
+    User,  # noqa
+)
 from app.utils.unitofwork import UnitOfWork
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"  # отдельная БД для тестов

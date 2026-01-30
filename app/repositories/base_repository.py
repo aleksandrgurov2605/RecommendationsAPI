@@ -2,8 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Type
 
 from pydantic import BaseModel
-
-from sqlalchemy import select, insert, update, delete
+from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import Base
@@ -61,8 +60,8 @@ class Repository(AbstractRepository):
         :param id:
         :return:
         """
-        stmt = select(self.model).where(self.model.id==id)
-        res  = await self.session.execute(stmt)
+        stmt = select(self.model).where(self.model.id == id)
+        res = await self.session.execute(stmt)
         return res.scalar_one_or_none()
 
     async def update(self, data: dict, id: int) -> BaseModel | None:
@@ -72,7 +71,12 @@ class Repository(AbstractRepository):
         :param id:
         :return:
         """
-        stmt = update(self.model).where(self.model.id==id).values(data).returning(self.model)
+        stmt = (
+            update(self.model)
+            .where(self.model.id == id)
+            .values(data)
+            .returning(self.model)
+        )
         data = await self.session.execute(stmt)
         res = data.scalar_one()
 
@@ -86,4 +90,3 @@ class Repository(AbstractRepository):
         """
         stmt = delete(self.model).where(self.model.id == id)
         await self.session.execute(stmt)
-

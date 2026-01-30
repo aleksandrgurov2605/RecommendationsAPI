@@ -1,10 +1,8 @@
 from pydantic import BaseModel
-from sqlalchemy import select, delete, func, cast
-from sqlalchemy.orm import aliased
+from sqlalchemy import select
 
 from app.models.recommendations import Recommendation
 from app.repositories.base_repository import Repository
-from app.utils.logger import logger
 
 
 class RecommendationRepository(Repository):
@@ -16,11 +14,6 @@ class RecommendationRepository(Repository):
         :param user_id:
         :return:
         """
-        stmt = select(self.model).where(self.model.user_id==user_id)
-        res  = await self.session.execute(stmt)
+        stmt = select(self.model).where(self.model.user_id == user_id)
+        res = await self.session.execute(stmt)
         return res.scalar_one_or_none()
-
-
-
-
-

@@ -5,9 +5,7 @@ from app.utils.unitofwork import IUnitOfWork
 
 class ItemService:
     @staticmethod
-    async def get_all_items(
-            uow: IUnitOfWork
-    ) -> list[ItemRead]:
+    async def get_all_items(uow: IUnitOfWork) -> list[ItemRead]:
         """
         Получить список всех активных товаров.
         :param uow:
@@ -18,10 +16,7 @@ class ItemService:
             return [ItemRead.model_validate(item) for item in items_to_return]
 
     @staticmethod
-    async def add_item(
-            uow: IUnitOfWork,
-            item: ItemCreate
-    ) -> ItemRead:
+    async def add_item(uow: IUnitOfWork, item: ItemCreate) -> ItemRead:
         """
         Создать новый товар.
         :param uow:
@@ -40,10 +35,7 @@ class ItemService:
             return item_to_return
 
     @staticmethod
-    async def get_item(
-            uow: IUnitOfWork,
-            item_id: int
-    ) -> ItemRead:
+    async def get_item(uow: IUnitOfWork, item_id: int) -> ItemRead:
         """
         Получить активный товар по id.
         :param uow:
@@ -57,11 +49,7 @@ class ItemService:
             return ItemRead.model_validate(item_to_return)
 
     @staticmethod
-    async def update_item(
-            uow: IUnitOfWork,
-            item_id: int,
-            item: ItemCreate
-    ) -> ItemRead:
+    async def update_item(uow: IUnitOfWork, item_id: int, item: ItemCreate) -> ItemRead:
         """
         Обновить товар по id
         :param uow:
@@ -88,10 +76,7 @@ class ItemService:
             return ItemRead.model_validate(item_to_return)
 
     @staticmethod
-    async def delete_item(
-            uow: IUnitOfWork,
-            item_id: int
-    ) -> None:
+    async def delete_item(uow: IUnitOfWork, item_id: int) -> None:
         """
         Удалить товар по id.
         :param uow:

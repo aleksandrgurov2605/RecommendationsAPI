@@ -1,13 +1,16 @@
+from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
-from fastapi.security import OAuth2PasswordBearer
-from datetime import datetime, timedelta, timezone
 import jwt
 from fastapi import Depends
+from fastapi.security import OAuth2PasswordBearer
 
 from app.core.config import settings
-from app.errors.users_exceptions import CredentialsError, TokenHasExpiredError, UserNotFoundError
-
+from app.errors.users_exceptions import (
+    CredentialsError,
+    TokenHasExpiredError,
+    UserNotFoundError,
+)
 from app.schemas.users import UserRead
 from app.utils.logger import logger
 from app.utils.unitofwork import IUnitOfWork, UnitOfWork
@@ -43,8 +46,8 @@ def create_refresh_token(data: dict):
 
 
 async def get_current_user(
-        uow: Annotated[IUnitOfWork, Depends(UnitOfWork)],
-        token: Annotated[str, Depends(oauth2_scheme)]
+    uow: Annotated[IUnitOfWork, Depends(UnitOfWork)],
+    token: Annotated[str, Depends(oauth2_scheme)],
 ):
     """
     Проверяет JWT и возвращает пользователя из базы.
@@ -53,20 +56,22 @@ async def get_current_user(
     :return:
     """
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
         email: str = payload.get("sub")
         if email is None:
-            logger.info(f"if email is None")
+            logger.info("if email is None")
             raise CredentialsError
-    except jwt.ExpiredSignatureError:
-        logger.info(f"except jwt.ExpiredSignatureError")
-        raise TokenHasExpiredError
-    except jwt.PyJWTError:
-        logger.info(f"except jwt.PyJWTError")
-        raise CredentialsError
+    except jwt.ExpiredSignatureError as err:
+        logger.info("except jwt.ExpiredSignatureError")
+        raise TokenHasExpiredError from err
+    except jwt.PyJWTError as err:
+        logger.info("except jwt.PyJWTError")
+        raise CredentialsError from err
     async with uow as uow:
         user_to_return = await uow.user.get_user(email=email)
         if not user_to_return:
-            logger.info(f"if not user_to_return")
+            logger.info("if not user_to_return")
             raise UserNotFoundError
         return UserRead.model_validate(user_to_return)

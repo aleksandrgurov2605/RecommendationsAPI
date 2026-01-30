@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import ForeignKey, Integer, DateTime, func, Numeric
+from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -19,17 +19,17 @@ class Purchase(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
-    user: Mapped["User"] = relationship(
-        "User",
-        back_populates="purchases"
+    user: Mapped["User"] = relationship(  # noqa: F821
+        "User", back_populates="purchases"
     )
     purchase_units: Mapped[list["PurchaseUnit"]] = relationship(
-        "PurchaseUnit",
-        back_populates="purchase",
-        lazy="selectin"
+        "PurchaseUnit", back_populates="purchase", lazy="selectin"
     )
 
 
@@ -44,11 +44,8 @@ class PurchaseUnit(Base):
     total_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
 
     purchase: Mapped["Purchase"] = relationship(
-        "Purchase",
-        back_populates="purchase_units"
+        "Purchase", back_populates="purchase_units"
     )
-    item: Mapped["Item"] = relationship(
-        "Item",
-        back_populates="purchase_unit",
-        lazy="selectin"
+    item: Mapped["Item"] = relationship(  # noqa: F821
+        "Item", back_populates="purchase_unit", lazy="selectin"
     )

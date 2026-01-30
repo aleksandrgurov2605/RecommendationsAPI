@@ -1,7 +1,5 @@
 import pytest
 
-from app.utils.logger import logger
-
 
 @pytest.mark.asyncio
 async def test_cart_workflow(client, setup_cart_db, cart_auth_headers):
@@ -11,7 +9,7 @@ async def test_cart_workflow(client, setup_cart_db, cart_auth_headers):
     add_resp = await client.post(
         "/cart/units",
         json={"item_id": item1_id, "quantity": 2},
-        headers=cart_auth_headers
+        headers=cart_auth_headers,
     )
     assert add_resp.status_code == 201
     assert add_resp.json()["quantity"] == 2
@@ -26,7 +24,7 @@ async def test_cart_workflow(client, setup_cart_db, cart_auth_headers):
     update_resp = await client.put(
         f"/cart/units/{item1_id}",
         json={"item_id": item1_id, "quantity": 5},
-        headers=cart_auth_headers
+        headers=cart_auth_headers,
     )
     assert update_resp.status_code == 200
     assert update_resp.json()["quantity"] == 5
@@ -34,8 +32,7 @@ async def test_cart_workflow(client, setup_cart_db, cart_auth_headers):
     # 4. Удаляем один товар
     item_id = add_resp.json()["item"]["id"]
     del_unit_resp = await client.delete(
-        f"/cart/units/{item_id}",
-        headers=cart_auth_headers
+        f"/cart/units/{item_id}", headers=cart_auth_headers
     )
     assert del_unit_resp.status_code == 204
 
@@ -46,7 +43,7 @@ async def test_clear_cart(client, setup_cart_db, cart_auth_headers):
     await client.post(
         "/cart/units",
         json={"item_id": setup_cart_db["item1"].id, "quantity": 1},
-        headers=cart_auth_headers
+        headers=cart_auth_headers,
     )
 
     # Полная очистка
