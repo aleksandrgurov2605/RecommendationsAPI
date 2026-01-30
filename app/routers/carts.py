@@ -23,7 +23,7 @@ async def get_cart(
     :param current_user:
     :return:
     """
-    logger.info(f"Получить корзину пользователя.")
+    logger.info("Получить корзину пользователя.")
     result = await CartService.get_cart(uow, current_user)
     return result
 
@@ -61,12 +61,12 @@ async def update_cart_unit(
     :param current_user:
     :return:
     """
-    logger.info(f"Обновить количество товара {payload.item_id} в корзине.")
+    logger.info(f"Обновить количество товара {item_id} в корзине.")
     updated_unit = await CartService.update_cart_unit(item_id, uow, current_user, payload)
     return updated_unit
 
 
-@router.delete("/units/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/units/{cart_unit_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_cart_unit_from_cart(
         cart_unit_id: int,
         uow: UOWDep,

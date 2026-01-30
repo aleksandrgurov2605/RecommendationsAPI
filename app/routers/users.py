@@ -51,7 +51,7 @@ async def get_user_by_id(uow: UOWDep, user_id: int):
 
 
 @router.put("/{user_id}", response_model=UserRead)
-async def update_user(uow: UOWDep, user_id: int, user: UserCreate):
+async def update_user(uow: UOWDep, current_user: UserDep, user_id: int, user: UserCreate):
     """
     Обновить пользователя по id.
     :param uow:
@@ -65,7 +65,7 @@ async def update_user(uow: UOWDep, user_id: int, user: UserCreate):
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user(uow: UOWDep, user_id: int):
+async def delete_user(uow: UOWDep, current_user: UserDep, user_id: int):
     """
     Удалить пользователя по id.
     :param uow:

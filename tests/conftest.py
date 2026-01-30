@@ -1,5 +1,4 @@
 import pytest_asyncio
-import uuid
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine

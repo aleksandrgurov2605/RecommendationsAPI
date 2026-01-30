@@ -1,4 +1,3 @@
-import asyncio
 from fastapi import APIRouter, Query
 
 from app.dependencies.dependencies import UOWDep
@@ -17,11 +16,10 @@ router = APIRouter(
 @router.get("/")
 async def get_recommendations(
         uow: UOWDep,
-        user_id: int,
+        user_id: int = Query(..., gt=0),
 ):
     logger.info(f"Получение рекомендаций для пользователя {user_id}")
     result = await RecommendationService.get_recommendations(uow, user_id)
-    # logger.info(f"recommendations_router:  {result=}")
     return {"recommendations": result}
 
 
@@ -37,11 +35,6 @@ async def generate_recommendations(
         recommendation.min_pair_count
     )
     logger.info(f"Успех! ID: {task.id}")
-    # task = await asyncio.to_thread(
-    #     generate_recommendations_task.delay,
-    #     recommendation.user_id,
-    #     recommendation.min_pair_count
-    # )
     return {
         "result": f"recommendation generation started",
         "task_id": task.id,

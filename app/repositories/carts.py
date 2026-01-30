@@ -57,12 +57,12 @@ class CartRepository(Repository):
         )
         await self.session.execute(stmt)
 
-    async def delete_all(self, where: int) -> None:
+    async def delete_all(self, id: int) -> None:
         """
         Удаляет все единицы товара пользователя из БД. Очищает корзину пользователя.
-        :param where:
+        :param id:
         :return:
         """
         logger.debug(f"Starting CartRepository.delete_all")
-        stmt = delete(self.model).where(self.model.user_id == where)
+        stmt = delete(self.model).where(self.model.user_id == id)
         await self.session.execute(stmt)

@@ -6,18 +6,18 @@ import pytest
     [
         ({"email": "fake_email1@fakemail.com", "name": "name", "password": "password"}, 201),
         ({"email": "fake_email2@fakemail.com", "name": "name", "password": "password"}, 201),
-        ({"email": "fake_email3@fakemail.com", "name": "name", "password": "password"}, 201),
-        ({"email": "fake_email4@fakemail.com", "name": "name", "password": "password"}, 201),
-        ({"email": "fake_email5@fakemail.com", "name": "name", "password": "password"}, 201),
-        ({"email": "fake_email6@fakemail.com", "name": "name", "password": "password"}, 201),
+        ({"email": "incorrect_email", "name": "name", "password": "password"}, 422),
+        ({"email": "fake_email5@fakemail.com", "name": "", "password": "password"}, 422),
+        ({"email": "fake_email6@fakemail.com", "name": "e", "password": "password"}, 422),
+        ({"email": "fake_email_prepair@fakemail.com", "name": "Duplicate", "password": "password"}, 409),
     ],
     ids=[
         "success",
         "success",
-        "success",
-        "non_existent_parent",
+        "incorrect_email",
         "empty_name",
-        "name_too_short"
+        "name_too_short",
+        "already_exist"
     ]
 )
 @pytest.mark.asyncio
@@ -73,8 +73,8 @@ async def test_get_user_by_id(client, setup_database, user_id, expected_status, 
     ]
 )
 @pytest.mark.asyncio
-async def test_update_user(client, setup_database, user_id, update_data, expected_status):
-    r = await client.put(f"/users/{user_id}", json=update_data)
+async def test_update_user(client, setup_database, auth_headers, user_id, update_data, expected_status):
+    r = await client.put(f"/users/{user_id}", json=update_data, headers=auth_headers)
     assert r.status_code == expected_status
     if expected_status == 200:
         assert r.json()["name"] == update_data["name"]
@@ -92,9 +92,9 @@ async def test_update_user(client, setup_database, user_id, update_data, expecte
     ]
 )
 @pytest.mark.asyncio
-async def test_delete_user(client, setup_database, user_id, expected_status):
+async def test_delete_user(client, setup_database, auth_headers, user_id, expected_status):
     # Удаление
-    r = await client.delete(f"/users/{user_id}")
+    r = await client.delete(f"/users/{user_id}", headers=auth_headers)
     assert r.status_code == expected_status
 
     # Проверка, что после 204 ресурс действительно пропал

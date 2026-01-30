@@ -1,0 +1,19 @@
+repos:
+  - repo: https://github.com
+    rev: v0.9.0
+    hooks:
+      # Запускает линтер и исправляет то, что можно (импорты и т.д.)
+      - id: ruff
+        args: [ --fix ]
+      # Автоматически форматирует код
+      - id: ruff-format
+
+  - repo: https://github.com
+    rev: v1.14.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [
+          "pydantic",
+          "sqlalchemy",
+          "fastapi"
+        ]
