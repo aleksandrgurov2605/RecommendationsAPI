@@ -12,14 +12,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install uv
+    - name: Install uv and Python
       uses: astral-sh/setup-uv@v5
       with:
+        python-version: "3.14"
         enable-cache: true
-
-    - name: Set up Python
-      # Если остаешься на 3.14, используй 3.14-dev. Для стабильности лучше 3.12
-      run: uv python install 3.14-dev
 
     - name: Lint with Ruff
       run: |
