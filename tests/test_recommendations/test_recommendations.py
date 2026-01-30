@@ -137,6 +137,3 @@ async def test_generate_recommendations_schema_validation(
     """Проверка валидации Pydantic-схемы RecommendationCreate в POST /generate"""
     response = await client.post("/recommendations/generate", json=payload)
     assert response.status_code == expected_status
-
-
-

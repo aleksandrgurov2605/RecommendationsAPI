@@ -12,7 +12,7 @@ async def setup_database(session_factory):
         user1 = User(
             email="prepair@mail.com",
             name="User",
-            password=get_password_hash("password")
+            password=get_password_hash("password"),
         )
         session.add(user1)
         await session.flush()

@@ -96,8 +96,8 @@ class PurchaseUnitRepository(Repository):
                 pu1.item_id.label("id_a"),
                 pu2.item_id.label("id_b"),
                 (
-                        cast(func.count(pu1.id) * total_transactions, Float)
-                        / (ic1.c.total_cnt * ic2.c.total_cnt)
+                    cast(func.count(pu1.id) * total_transactions, Float)
+                    / (ic1.c.total_cnt * ic2.c.total_cnt)
                 ).label("lift_value"),
             )
             .join(pu2, pu1.purchase_id == pu2.purchase_id)
