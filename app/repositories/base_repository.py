@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Type, TypeVar, Generic, Sequence
+from typing import Any, Generic, Sequence, Type, TypeVar
 
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -72,12 +72,7 @@ class Repository(AbstractRepository[T]):
         :param id:
         :return:
         """
-        stmt = (
-            update(self.model)
-            .filter_by(id=id)
-            .values(data)
-            .returning(self.model)
-        )
+        stmt = update(self.model).filter_by(id=id).values(data).returning(self.model)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 

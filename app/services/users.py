@@ -78,14 +78,13 @@ class UserService:
             if not existing_user:
                 raise UserNotFoundError
             try:
-                user_updated  = await uow.user.update(data=user_data, id=user_id)
+                user_updated = await uow.user.update(data=user_data, id=user_id)
                 if not user_updated:
                     raise UserNotFoundError
                 await uow.commit()
                 return UserRead.model_validate(user_updated)
             except IntegrityError as err:
                 raise EmailAlreadyTakenError from err
-
 
     @staticmethod
     async def delete_user(uow: IUnitOfWork, user_id: int) -> None:
@@ -106,7 +105,7 @@ class UserService:
 
     @staticmethod
     async def login(
-            uow: IUnitOfWork, form_data: OAuth2PasswordRequestForm
+        uow: IUnitOfWork, form_data: OAuth2PasswordRequestForm
     ) -> dict[str, str]:
         """
         Аутентифицировать пользователя и получить access_token и refresh_token.

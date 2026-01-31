@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Optional, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -8,6 +9,7 @@ from app.db.database import Base
 
 if TYPE_CHECKING:
     from app.models.items import Item
+
 
 class Category(Base):
     __tablename__ = "categories"

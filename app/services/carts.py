@@ -119,7 +119,9 @@ class CartService:
             if not existing_cart_unit:
                 raise CartUnitNotFoundError
 
-            await uow.cart.delete_cart_unit(user_id=current_user.id, cart_unit_id=cart_unit_id)
+            await uow.cart.delete_cart_unit(
+                user_id=current_user.id, cart_unit_id=cart_unit_id
+            )
             await uow.commit()
 
     @staticmethod

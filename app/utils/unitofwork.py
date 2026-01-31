@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.db.database import async_session_maker

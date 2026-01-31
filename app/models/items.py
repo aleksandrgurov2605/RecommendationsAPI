@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
@@ -8,8 +9,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
 if TYPE_CHECKING:
-    from app.models.categories import Category
     from app.models.carts import CartUnit
+    from app.models.categories import Category
     from app.models.purchases import PurchaseUnit
 
 

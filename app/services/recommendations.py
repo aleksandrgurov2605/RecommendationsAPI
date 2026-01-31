@@ -22,7 +22,9 @@ class RecommendationService:
                 "user_id": user_id,
                 "item_id": recommendations[0].get("recommended_item_id"),
             }
-            recommendations_from_db = await uow.recommendation.fetch_one(user_id=user_id)
+            recommendations_from_db = await uow.recommendation.fetch_one(
+                user_id=user_id
+            )
             logger.debug(f"RecommendationService: {recommendations_from_db=}")
             if recommendations_from_db:
                 await uow.recommendation.update(rec_dict, recommendations_from_db.id)
