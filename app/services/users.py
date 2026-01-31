@@ -141,9 +141,10 @@ class UserService:
             payload = jwt.decode(
                 refresh_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
             )
-            email: str = payload.get("sub")
-            if email is None:
+            email_raw = payload.get("sub")
+            if not isinstance(email_raw, str):
                 raise CredentialsError
+            email: str = email_raw
         except jwt.ExpiredSignatureError as err:
             # refresh-токен истёк
             raise TokenHasExpiredError from err

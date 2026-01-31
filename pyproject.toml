@@ -45,7 +45,7 @@ addopts = [
 
 [tool.ruff]
 line-length = 88
-target-version = "py314"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = [
@@ -59,7 +59,7 @@ select = [
 ignore = []
 
 [tool.mypy]
-python_version = "3.14"
+python_version = "3.13"
 explicit_package_bases = true
 mypy_path = "."
 ignore_missing_imports = true

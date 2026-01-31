@@ -59,10 +59,10 @@ async def get_current_user(
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
-        email: str = payload.get("sub")
-        if email is None:
-            logger.info("if email is None")
+        email_raw = payload.get("sub")
+        if not isinstance(email_raw, str):
             raise CredentialsError
+        email: str = email_raw
     except jwt.ExpiredSignatureError as err:
         logger.info("except jwt.ExpiredSignatureError")
         raise TokenHasExpiredError from err
