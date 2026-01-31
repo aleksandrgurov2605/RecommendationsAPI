@@ -6,7 +6,7 @@ from app.models.purchases import Purchase, PurchaseUnit
 from app.repositories.base_repository import Repository
 
 
-class PurchaseRepository(Repository):
+class PurchaseRepository(Repository[Purchase]):
     model = Purchase
 
     async def get_purchases(self, **filter_by):
@@ -51,7 +51,7 @@ class PurchaseRepository(Repository):
         return count.first()
 
 
-class PurchaseUnitRepository(Repository):
+class PurchaseUnitRepository(Repository[PurchaseUnit]):
     model = PurchaseUnit
 
     async def generate_recommendations(self, filter_by):

@@ -1,21 +1,23 @@
-import os
+from pathlib import Path
 from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
 
 class Settings(BaseSettings):
-    MODE: Literal["DEV", "TEST", "PROD"]
-    LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+    MODE: Literal["DEV", "TEST", "PROD"] = "DEV"
+    LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
 
-    DATABASE_URL: str
-    TEST_DATABASE_URL: str
+    DATABASE_URL: str = ""
+    TEST_DATABASE_URL: str = ""
 
-    SECRET_KEY: str
-    ALGORITHM: str
+    SECRET_KEY: str = ""
+    ALGORITHM: str = ""
 
     model_config = SettingsConfigDict(
-        env_file=os.path.join(os.path.dirname(__file__), "..", "..", ".env"),
+        env_file=BASE_DIR / ".env",
         extra="ignore",
     )
 

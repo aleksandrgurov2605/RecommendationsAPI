@@ -4,7 +4,7 @@ from app.models.items import Item
 from app.repositories.base_repository import Repository
 
 
-class ItemRepository(Repository):
+class ItemRepository(Repository[Item]):
     model = Item
 
     async def get_active_item(self, item_id: int):

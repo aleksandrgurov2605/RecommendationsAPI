@@ -64,8 +64,8 @@ async def update_user(
     :return:
     """
     logger.info(f"Обновить пользователя по id = {user_id}.")
-    user = await UserService.update_user(uow, user_id, user)
-    return user
+    user_updated = await UserService.update_user(uow, user_id, user)
+    return user_updated
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)

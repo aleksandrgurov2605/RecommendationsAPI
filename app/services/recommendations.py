@@ -22,7 +22,7 @@ class RecommendationService:
                 "user_id": user_id,
                 "item_id": recommendations[0].get("recommended_item_id"),
             }
-            recommendations_from_db = await uow.recommendation.fetch_one(user_id)
+            recommendations_from_db = await uow.recommendation.fetch_one(user_id=user_id)
             logger.debug(f"RecommendationService: {recommendations_from_db=}")
             if recommendations_from_db:
                 await uow.recommendation.update(rec_dict, recommendations_from_db.id)
@@ -33,7 +33,7 @@ class RecommendationService:
 
     @staticmethod
     async def get_recommendations(uow: IUnitOfWork, user_id: int):
-        async with uow as uow:
-            recs = await uow.recommendation.fetch_one(user_id)
+        async with uow:
+            recs = await uow.recommendation.fetch_one(user_id=user_id)
             logger.debug(f"RecommendationService: {recs=}")
             return Recommendation.model_validate(recs) if recs else None

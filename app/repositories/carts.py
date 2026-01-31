@@ -1,13 +1,15 @@
+from typing import Any, Sequence
+
 from sqlalchemy import delete, select
 
 from app.models.carts import CartUnit
 from app.repositories.base_repository import Repository
 
 
-class CartRepository(Repository):
+class CartRepository(Repository[CartUnit]):
     model = CartUnit
 
-    async def get_cart(self, **filter_by: dict):
+    async def get_cart(self, **filter_by: Any) -> Sequence[CartUnit]:
         """
         Получить корзину пользователя.
         :param filter_by:
@@ -39,7 +41,7 @@ class CartRepository(Repository):
         unit = await self.session.execute(stmt)
         return unit.scalar_one_or_none()
 
-    async def delete(self, **filter_by) -> None:
+    async def delete_cart_unit(self, **filter_by) -> None:
         """
         Удалить запись единицы товара из БД.
         :param filter_by:

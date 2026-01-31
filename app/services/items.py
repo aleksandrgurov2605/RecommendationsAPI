@@ -11,7 +11,7 @@ class ItemService:
         :param uow:
         :return:
         """
-        async with uow as uow:
+        async with uow:
             items_to_return = await uow.item.find_all()
             return [ItemRead.model_validate(item) for item in items_to_return]
 
@@ -23,9 +23,9 @@ class ItemService:
         :param item:
         :return:
         """
-        async with uow as uow:
+        async with uow:
             # Проверяем существование категории
-            existing_category = await uow.category.fetch_one(item.category_id)
+            existing_category = await uow.category.fetch_one(id=item.category_id)
             if not existing_category:
                 raise WrongCategoryNotFoundError
             item_dict = item.model_dump()
@@ -42,7 +42,7 @@ class ItemService:
         :param item_id:
         :return:
         """
-        async with uow as uow:
+        async with uow:
             item_to_return = await uow.item.fetch_one(id=item_id)
             if not item_to_return:
                 raise ItemNotFoundError
@@ -57,7 +57,7 @@ class ItemService:
         :param item:
         :return:
         """
-        async with uow as uow:
+        async with uow:
             # Проверяем существование товара
             existing_item = await uow.item.fetch_one(id=item_id)
             if not existing_item:
@@ -83,7 +83,7 @@ class ItemService:
         :param item_id:
         :return:
         """
-        async with uow as uow:
+        async with uow:
             # Проверяем существование товара
             existing_item = await uow.item.fetch_one(id=item_id)
             if not existing_item:

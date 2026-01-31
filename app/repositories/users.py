@@ -1,14 +1,13 @@
-from pydantic import BaseModel
 from sqlalchemy import select
 
 from app.models.users import User
 from app.repositories.base_repository import Repository
 
 
-class UserRepository(Repository):
+class UserRepository(Repository[User]):
     model = User
 
-    async def get_user(self, email: str) -> BaseModel | None:
+    async def get_user(self, email: str) -> User | None:
         """
         Получить по условию where одну запись или None
         :param email:

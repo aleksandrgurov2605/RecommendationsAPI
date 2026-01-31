@@ -59,8 +59,8 @@ async def update_category(uow: UOWDep, category_id: int, category: CategoryCreat
     :return:
     """
     logger.info(f"Обновить категорию по id {category_id}.")
-    category = await CategoryService.update_category(uow, category_id, category)
-    return category
+    category_updated = await CategoryService.update_category(uow, category_id, category)
+    return category_updated
 
 
 @router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)

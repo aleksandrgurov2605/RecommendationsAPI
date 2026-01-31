@@ -59,8 +59,8 @@ async def update_item(uow: UOWDep, item_id: int, item: ItemCreate):
     :return:
     """
     logger.info(f"Обновить товар по id = {item_id}.")
-    item = await ItemService.update_item(uow, item_id, item)
-    return item
+    item_updated = await ItemService.update_item(uow, item_id, item)
+    return item_updated
 
 
 @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)

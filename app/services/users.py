@@ -23,7 +23,7 @@ class UserService:
         :param uow:
         :return:
         """
-        async with uow as uow:
+        async with uow:
             users_to_return = await uow.user.find_all()
             return [UserRead.model_validate(user) for user in users_to_return]
 
@@ -38,7 +38,7 @@ class UserService:
         user_data = user.model_dump()
         user_data["password"] = get_password_hash(user_data["password"])
 
-        async with uow as uow:
+        async with uow:
             try:
                 user_from_db = await uow.user.add_one(user_data)
             except IntegrityError as err:
@@ -70,21 +70,22 @@ class UserService:
         :param user:
         :return:
         """
+        user_data = user.model_dump()
+        user_data["password"] = get_password_hash(user_data["password"])
         async with uow as uow:
             # Проверяем существование пользователя
             existing_user = await uow.user.fetch_one(id=user_id)
             if not existing_user:
                 raise UserNotFoundError
-            user_data = user.model_dump()
-            user_data["password"] = get_password_hash(user_data["password"])
             try:
-                user_to_return = await uow.user.update(data=user_data, id=user_id)
+                user_updated  = await uow.user.update(data=user_data, id=user_id)
+                if not user_updated:
+                    raise UserNotFoundError
+                await uow.commit()
+                return UserRead.model_validate(user_updated)
             except IntegrityError as err:
                 raise EmailAlreadyTakenError from err
-            if not user_to_return:
-                raise UserNotFoundError
-            await uow.commit()
-            return UserRead.model_validate(user_to_return)
+
 
     @staticmethod
     async def delete_user(uow: IUnitOfWork, user_id: int) -> None:
@@ -105,7 +106,7 @@ class UserService:
 
     @staticmethod
     async def login(
-        uow: IUnitOfWork, form_data: OAuth2PasswordRequestForm
+            uow: IUnitOfWork, form_data: OAuth2PasswordRequestForm
     ) -> dict[str, str]:
         """
         Аутентифицировать пользователя и получить access_token и refresh_token.

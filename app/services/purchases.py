@@ -26,7 +26,7 @@ class PurchaseService:
             f"PurchaseService: Создать заказ "
             f"на основе текущей корзины пользователя {current_user.id}."
         )
-        async with uow as uow:
+        async with uow:
             cart_units = await uow.cart.get_cart(current_user_id=current_user.id)
             if not cart_units:
                 raise CartUnitNotFoundError
@@ -60,18 +60,20 @@ class PurchaseService:
                 item.stock -= cart_unit.quantity
 
             purchase.total_amount = total_amount
-            data = {
+            data_update = {
                 "status": purchase.status,
                 "user_id": purchase.user_id,
                 "total_amount": purchase.total_amount,
             }
-            purchase = await uow.purchase.update(data, id=purchase.id)
+            updated_purchase = await uow.purchase.update(data_update, id=purchase.id)
+            if updated_purchase is None:
+                raise PurchaseNotFoundError
 
             await uow.cart.delete_all(current_user.id)
             await uow.commit()
-            await uow.refresh(purchase)
+            await uow.refresh(updated_purchase)
 
-            created_purchase = await uow.purchase.fetch_one(purchase.id)
+            created_purchase = await uow.purchase.fetch_one(id=updated_purchase.id)
             if not created_purchase:
                 raise PurchaseNotFoundError
 
@@ -93,7 +95,7 @@ class PurchaseService:
             f"PurchaseService: Получить все заказы "
             f"текущего пользователя {current_user.id}."
         )
-        async with uow as uow:
+        async with uow:
             purchases = await uow.purchase.get_purchases(
                 current_user_id=current_user.id, page=page, page_size=page_size
             )
@@ -119,8 +121,8 @@ class PurchaseService:
             f"PurchaseService: Получить детальную информацию "
             f"по заказу пользователя {current_user.id}."
         )
-        async with uow as uow:
-            purchase_to_return = await uow.purchase.fetch_one(purchase_id)
+        async with uow:
+            purchase_to_return = await uow.purchase.fetch_one(id=purchase_id)
             if not purchase_to_return:
                 raise PurchaseNotFoundError
             return Purchase.model_validate(purchase_to_return)

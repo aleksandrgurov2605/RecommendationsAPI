@@ -19,7 +19,7 @@ class CartService:
         :param cart_unit:
         :return:
         """
-        async with uow as uow:
+        async with uow:
             item = await uow.item.get_active_item(item_id=cart_unit.item_id)
             if not item:
                 raise ItemNotFoundError
@@ -47,11 +47,11 @@ class CartService:
         :param current_user:
         :return:
         """
-        async with uow as uow:
-            units = await uow.cart.get_cart(current_user_id=current_user.id)
-            units = [CartUnitRead.model_validate(unit) for unit in units]
+        async with uow:
+            db_units = await uow.cart.get_cart(current_user_id=current_user.id)
+            read_units = [CartUnitRead.model_validate(unit) for unit in db_units]
 
-        total_quantity = sum(unit.quantity for unit in units)
+        total_quantity = sum(unit.quantity for unit in read_units)
         price_units = (
             Decimal(unit.quantity)
             * (
@@ -59,13 +59,13 @@ class CartService:
                 if unit.item.price is not None
                 else Decimal("0")
             )
-            for unit in units
+            for unit in read_units
         )
         total_price_decimal = sum(price_units, Decimal("0"))
 
         return Cart(
             user_id=current_user.id,
-            units=units,
+            units=read_units,
             total_quantity=total_quantity,
             total_price=total_price_decimal,
         )
@@ -85,7 +85,7 @@ class CartService:
         :param cart_unit:
         :return:
         """
-        async with uow as uow:
+        async with uow:
             item = await uow.item.get_active_item(item_id=item_id)
             if not item:
                 raise ItemNotFoundError
@@ -114,12 +114,12 @@ class CartService:
         :param cart_unit_id:
         :return:
         """
-        async with uow as uow:
+        async with uow:
             existing_cart_unit = await uow.cart.fetch_one(id=cart_unit_id)
             if not existing_cart_unit:
                 raise CartUnitNotFoundError
 
-            await uow.cart.delete(user_id=current_user.id, cart_unit_id=cart_unit_id)
+            await uow.cart.delete_cart_unit(user_id=current_user.id, cart_unit_id=cart_unit_id)
             await uow.commit()
 
     @staticmethod
@@ -130,6 +130,6 @@ class CartService:
         :param current_user:
         :return:
         """
-        async with uow as uow:
+        async with uow:
             await uow.cart.delete_all(id=current_user.id)
             await uow.commit()
