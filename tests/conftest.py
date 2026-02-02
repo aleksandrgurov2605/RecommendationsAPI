@@ -5,10 +5,6 @@ from sqlalchemy.pool import StaticPool
 
 from app.db.database import Base
 from app.main import app as prod_app
-from app.models import (
-    Category,  # noqa
-    User,  # noqa
-)
 from app.utils.unitofwork import UnitOfWork
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"  # отдельная БД для тестов
@@ -16,9 +12,6 @@ TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"  # отдельная БД д
 
 @pytest_asyncio.fixture
 async def session_factory():
-    # Генерируем уникальное имя БД для каждого теста, чтобы память не пересекалась
-    # test_db_url = f"sqlite+aiosqlite:///file:{uuid.uuid4()}?mode=memory&cache=shared"
-
     engine = create_async_engine(
         TEST_DATABASE_URL,
         connect_args={"check_same_thread": False},
