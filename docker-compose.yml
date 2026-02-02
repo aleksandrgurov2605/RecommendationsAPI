@@ -10,6 +10,9 @@ services:
       - .docker.env
     depends_on:
       - db
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   db:
     image: postgres:16
@@ -20,8 +23,6 @@ services:
   redis:
     image: redis:7-alpine
     restart: always
-    ports:
-      - "6379:6379"
 
   worker:
     build:
@@ -33,6 +34,13 @@ services:
     depends_on:
       - db
       - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   postgres_data:
+
+networks:
+  default:
+    external: true
+    name: glitchtip_default

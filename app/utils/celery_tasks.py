@@ -1,9 +1,28 @@
 import asyncio
 
+import sentry_sdk
 from celery import Celery
+from celery.signals import worker_process_init
+from sentry_sdk.integrations.celery import CeleryIntegration
 
+from app.core.config import settings
 from app.services.recommendations import RecommendationService
 from app.utils.logger import logger
+
+
+@worker_process_init.connect
+def init_sentry(**kwargs):
+    if settings.SENTRY_DSN:
+        sentry_sdk.init(
+            dsn=settings.SENTRY_DSN,
+            integrations=[
+                CeleryIntegration(),
+            ],
+            traces_sample_rate=1.0,
+            profiles_sample_rate=1.0,
+            environment=settings.MODE,
+        )
+
 
 celery_app = Celery(
     "tasks", broker="redis://127.0.0.1:6379/0", backend="redis://127.0.0.1:6379/0"

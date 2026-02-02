@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str = ""
     ALGORITHM: str = ""
 
+    SENTRY_DSN: str = ""
+
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env" if MODE == "DEV" else BASE_DIR / ".docker.env",
         extra="ignore",

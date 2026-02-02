@@ -1,8 +1,13 @@
 import time
 
+import sentry_sdk
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
+from app.core.config import settings
 from app.errors.carts_exceptions import CartUnitNotFoundError, NotEnoughItemsError
 from app.errors.categories_exceptions import (
     CategoryNotFoundError,
@@ -30,6 +35,18 @@ from app.routers.recommendations import router as recommendations_router
 from app.routers.users import router as users_router
 from app.utils.logger import logger
 
+sentry_sdk.init(
+    dsn=settings.SENTRY_DSN,
+    integrations=[
+        FastApiIntegration(),
+        SqlalchemyIntegration(),
+        CeleryIntegration(),
+    ],
+    traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
+    environment=settings.MODE,
+)
+
 app = FastAPI()
 
 
@@ -46,6 +63,12 @@ async def log_requests(request: Request, call_next):
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+
+@app.get("/sentry-debug")
+async def trigger_error():
+    division_by_zero = 1 / 0
+    return division_by_zero
 
 
 app.include_router(categories_router)

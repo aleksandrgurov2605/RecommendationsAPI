@@ -18,3 +18,4 @@ wheels/
 /seed_purchase.py
 /.docker.env
 /README_BACKUP.md
+/glitchtip/.docker.env
