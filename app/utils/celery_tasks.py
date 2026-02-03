@@ -24,15 +24,15 @@ def init_sentry(**kwargs):
         )
 
 
-celery_app = Celery(
-    "tasks", broker="redis://127.0.0.1:6379/0", backend="redis://127.0.0.1:6379/0"
-)
+celery_app = Celery("tasks", broker=settings.REDIS_URL, backend=settings.REDIS_URL)
 
 celery_app.conf.worker_send_task_events = True
 
 
 @celery_app.task(name="generate_recommendations_task")
 def generate_recommendations_task(user_id: int, min_pair_count: int):
+    logger.info(f"Starting recommendation task for user {user_id}")
+
     async def run_process():
         from app.utils.unitofwork import UnitOfWork
 

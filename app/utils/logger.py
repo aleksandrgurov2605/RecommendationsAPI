@@ -1,22 +1,28 @@
 import logging
-from logging.handlers import RotatingFileHandler
+import sys
+
+import logging_loki  # pip install python-logging-loki-v2
 
 from app.core.config import settings
 
-logger = logging.getLogger("My shop")
+logger = logging.getLogger("rec-shop")
 logger.setLevel(settings.LOG_LEVEL)
 
-file_formatter = logging.Formatter(
+log_format = (
     "%(asctime)s - %(name)s - %(levelname)s - %(message)s [in %(pathname)s:%(lineno)d]"
 )
-console_formatter = logging.Formatter("%(levelname)s:     %(message)s")
+formatter = logging.Formatter(log_format)
 
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(console_formatter)
+# Вывод в консоль (STDOUT)
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
-file_handler = RotatingFileHandler(
-    "app.log", maxBytes=10**7, backupCount=5, encoding="utf-8"
+# Отправка в Loki через v2
+loki_handler = logging_loki.LokiHandler(
+    url="http://loki:3100/loki/api/v1/push",
+    tags={"app_name": "recs-app"},
+    version="1",
 )
-file_handler.setFormatter(file_formatter)
-logger.addHandler(file_handler)
+loki_handler.setFormatter(formatter)
+logger.addHandler(loki_handler)

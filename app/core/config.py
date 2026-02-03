@@ -23,6 +23,8 @@ class Settings(BaseSettings):
 
     SENTRY_DSN: str = ""
 
+    REDIS_URL: str = ""
+
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env" if MODE == "DEV" else BASE_DIR / ".docker.env",
         extra="ignore",

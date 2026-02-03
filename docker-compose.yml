@@ -1,11 +1,40 @@
 services:
+  # --- ИНФРАСТРУКТУРА ---
+  db:
+    image: postgres:16
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .docker.env
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+
+  # --- ПРИЛОЖЕНИЕ ---
   web:
     build:
       context: .
       dockerfile: app/Dockerfile
+    restart: always
     entrypoint: /home/rec_shop/entrypoint.sh
     ports:
-      - 8000:8000
+      - "8000:8000"
+    env_file:
+      - .docker.env
+    depends_on:
+      - db
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  worker:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    restart: always
+    command: celery -A app.utils.celery_tasks:celery_app worker --loglevel=info
     env_file:
       - .docker.env
     depends_on:
@@ -18,70 +47,71 @@ services:
     build:
       context: .
       dockerfile: app/Dockerfile
-    command: celery -A app.utils.celery_tasks:celery_app flower --port=5555
+    restart: always
+    command: celery -A app.utils.celery_tasks:celery_app flower --port=5555 --prometheus-metrics
     ports:
-      - 5555:5555
+      - "5555:5555"
     env_file:
       - .docker.env
     depends_on:
       - redis
       - worker
 
+  # --- МОНИТОРИНГ (МЕТРИКИ) ---
   prometheus:
     image: prom/prometheus
+    restart: always
     ports:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    restart: always
+      - prometheus_data:/prometheus
+    depends_on:
+      - web
+      - flower
 
   grafana:
     image: grafana/grafana
+    restart: always
     ports:
       - "3000:3000"
-    restart: always
+    user: "472"
     depends_on:
       - prometheus
+      - loki
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana_datasources.yml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
+      - ./grafana_dashboards_config.yml:/etc/grafana/provisioning/dashboards/provider.yaml:ro
+      - ./grafana_dashboards:/var/lib/grafana/dashboards:ro
 
+  # --- МОНИТОРИНГ (ЛОГИ) ---
   loki:
     image: grafana/loki:latest
+    restart: always
     ports:
       - "3100:3100"
-    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki_data:/loki
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
 
   promtail:
     image: grafana/promtail:latest
+    restart: always
+    user: root
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./promtail-config.yaml:/etc/promtail/config.yaml
     command: -config.file=/etc/promtail/config.yaml
-
-  db:
-    image: postgres:16
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    env_file:
-      - .docker.env
-  redis:
-    image: redis:7-alpine
-    restart: always
-
-  worker:
-    build:
-      context: .
-      dockerfile: app/Dockerfile
-    command: celery -A app.utils.celery_tasks:celery_app worker --loglevel=info
-    env_file:
-      - .docker.env
     depends_on:
-      - db
-      - redis
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - loki
 
 volumes:
   postgres_data:
   grafana_data:
+  loki_data:
+  prometheus_data:
 
 networks:
   default:

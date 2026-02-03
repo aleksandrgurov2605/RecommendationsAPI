@@ -1,7 +1,12 @@
+global:
+  scrape_interval: 15s
+
 scrape_configs:
   - job_name: 'fastapi'
     static_configs:
       - targets: ['web:8000']
+        labels:
+          app_name: 'fastapi'
 
   - job_name: 'celery'
     static_configs:
@@ -11,9 +16,7 @@ scrape_configs:
 
 
 
-#global:
-#  scrape_interval: 15s # Как часто собирать данные
-#
+
 #scrape_configs:
 #  - job_name: 'fastapi'
 #    static_configs:
