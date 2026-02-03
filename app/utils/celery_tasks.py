@@ -6,6 +6,7 @@ from celery.signals import worker_process_init
 from sentry_sdk.integrations.celery import CeleryIntegration
 
 from app.core.config import settings
+from app.db.database import engine
 from app.services.recommendations import RecommendationService
 from app.utils.logger import logger
 
@@ -24,15 +25,20 @@ def init_sentry(**kwargs):
         )
 
 
-celery_app = Celery(
-    "tasks", broker="redis://127.0.0.1:6379/0", backend="redis://127.0.0.1:6379/0"
-)
+@worker_process_init.connect
+def reset_db_connections(**kwargs):
+    engine.pool.dispose()
+
+
+celery_app = Celery("tasks", broker=settings.REDIS_URL, backend=settings.REDIS_URL)
 
 celery_app.conf.worker_send_task_events = True
 
 
 @celery_app.task(name="generate_recommendations_task")
 def generate_recommendations_task(user_id: int, min_pair_count: int):
+    logger.info(f"Starting recommendation task for user {user_id}")
+
     async def run_process():
         from app.utils.unitofwork import UnitOfWork
 

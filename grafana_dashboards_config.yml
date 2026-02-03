@@ -1,0 +1,9 @@
+apiVersion: 1
+providers:
+  - name: 'Standard'
+    options:
+      path: /var/lib/grafana/dashboards
+    jsonData:
+      DS_PROMETHEUS: Prometheus
+      DS_LOKI: Loki
+      app_name: fastapi

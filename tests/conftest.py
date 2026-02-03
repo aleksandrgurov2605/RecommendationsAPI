@@ -1,3 +1,9 @@
+import os
+
+# 1. Установка окружения до любых импортов приложения
+os.environ["MODE"] = "TEST"
+os.environ["SENTRY_DSN"] = ""
+
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -28,6 +34,11 @@ async def session_factory():
 
 @pytest_asyncio.fixture
 async def client(session_factory):
+    prod_app.user_middleware = [
+        m for m in prod_app.user_middleware if "Instrumentator" not in str(m)
+    ]
+    prod_app.middleware_stack = prod_app.build_middleware_stack()
+
     async def get_uow_test():
         uow = UnitOfWork()
         uow.session_factory = session_factory  # Инъекция фабрики ТЕКУЩЕГО теста
