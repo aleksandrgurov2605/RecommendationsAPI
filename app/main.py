@@ -3,6 +3,7 @@ import time
 import sentry_sdk
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
+from prometheus_fastapi_instrumentator import Instrumentator
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
@@ -48,6 +49,8 @@ sentry_sdk.init(
 )
 
 app = FastAPI()
+
+Instrumentator().instrument(app).expose(app)
 
 
 @app.middleware("http")
