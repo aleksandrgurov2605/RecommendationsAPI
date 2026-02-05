@@ -19,3 +19,4 @@ wheels/
 /.docker.env
 /README_BACKUP.md
 /glitchtip/.docker.env
+/dc_config.json

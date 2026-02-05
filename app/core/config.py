@@ -12,7 +12,6 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     DATABASE_URL: str = ""
-    TEST_DATABASE_URL: str = ""
 
     POSTGRES_DB: Optional[str] = None
     POSTGRES_PASSWORD: Optional[str] = None

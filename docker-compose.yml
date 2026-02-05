@@ -9,6 +9,18 @@ services:
     volumes:
       - app_postgres_data:/var/lib/postgresql/data/
     env_file: .env
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   gt-db:
     image: postgres:16-alpine
@@ -20,10 +32,29 @@ services:
     volumes:
       - gt_pg_data:/var/lib/postgresql/data
     env_file: .env
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${GT_POSTGRES_USER} -d $${GT_POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          memory: 256M
 
   web:
     build:
@@ -33,16 +64,22 @@ services:
     entrypoint: /home/rec_shop/entrypoint.sh
     env_file: .env
     environment:
-      - MODE=PROD
       - DATABASE_URL=${DATABASE_URL}
       - IS_CELERY_WORKER=False
     volumes:
       - static_volume:/home/rec_shop/static
     depends_on:
-      - app-db
-      - redis
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      app-db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          memory: 256M
 
   worker:
     build:
@@ -59,8 +96,13 @@ services:
     depends_on:
       - app-db
       - redis
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          memory: 256M
 
   flower:
     build:
@@ -75,11 +117,18 @@ services:
     depends_on:
       - redis
       - worker
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          memory: 256M
 
   glitchtip:
     image: glitchtip/glitchtip
     environment:
-      - DATABASE_URL=${GT_DATABASE_URL} # Обязательно!
+      - DATABASE_URL=${GT_DATABASE_URL}
       - GLITCHTIP_DOMAIN=http://gt.localhost
       - ALLOWED_HOSTS=gt.localhost,glitchtip,nginx
       - USE_X_FORWARDED_HOST=True
@@ -88,6 +137,13 @@ services:
     depends_on:
       - gt-db
       - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          memory: 256M
 
   gt-worker:
     image: glitchtip/glitchtip
@@ -99,6 +155,13 @@ services:
     depends_on:
       - gt-db
       - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          memory: 256M
 
   prometheus:
     image: prom/prometheus
@@ -114,6 +177,13 @@ services:
     depends_on:
       - web
       - flower
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          memory: 256M
 
   grafana:
     image: grafana/grafana
@@ -130,6 +200,13 @@ services:
       - ./grafana_datasources.yml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
       - ./grafana_dashboards_config.yml:/etc/grafana/provisioning/dashboards/provider.yaml:ro
       - ./grafana_dashboards:/var/lib/grafana/dashboards:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          memory: 256M
 
   loki:
     image: grafana/loki:latest
@@ -137,6 +214,13 @@ services:
     volumes:
       - loki_data:/loki
       - ./loki-config.yaml:/etc/loki/local-config.yaml
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          memory: 256M
 
   promtail:
     image: grafana/promtail:latest
@@ -149,6 +233,13 @@ services:
     command: -config.file=/etc/promtail/config.yaml
     depends_on:
       - loki
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          memory: 256M
 
   nginx:
     build:
@@ -164,6 +255,13 @@ services:
       - glitchtip
       - prometheus
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          memory: 256M
 
 volumes:
   app_postgres_data:

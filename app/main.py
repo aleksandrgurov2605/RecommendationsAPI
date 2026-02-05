@@ -53,7 +53,8 @@ app = FastAPI()
 
 Instrumentator().instrument(app).expose(app)
 
-app.mount("/static", StaticFiles(directory="/home/rec_shop/static"), name="static")
+if settings.MODE != "TEST":
+    app.mount("/static", StaticFiles(directory="/home/rec_shop/static"), name="static")
 
 
 @app.middleware("http")
