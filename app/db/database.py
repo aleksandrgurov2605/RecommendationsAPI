@@ -12,7 +12,7 @@ IS_WORKER = os.getenv("IS_CELERY_WORKER") == "True"
 DATABASE_URL = settings.DATABASE_URL
 DATABASE_PARAMS: dict[str, Any] = {"pool_size": 10, "max_overflow": 20}
 
-if IS_WORKER:
+if IS_WORKER or settings.MODE == "TEST":
     DATABASE_PARAMS = {"poolclass": NullPool}
 
 
