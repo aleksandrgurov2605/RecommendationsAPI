@@ -6,6 +6,7 @@ from celery.signals import worker_process_init
 from sentry_sdk.integrations.celery import CeleryIntegration
 
 from app.core.config import settings
+from app.db.database import engine
 from app.services.recommendations import RecommendationService
 from app.utils.logger import logger
 
@@ -22,6 +23,11 @@ def init_sentry(**kwargs):
             profiles_sample_rate=1.0,
             environment=settings.MODE,
         )
+
+
+@worker_process_init.connect
+def reset_db_connections(**kwargs):
+    engine.pool.dispose()
 
 
 celery_app = Celery("tasks", broker=settings.REDIS_URL, backend=settings.REDIS_URL)

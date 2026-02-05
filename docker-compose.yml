@@ -1,18 +1,32 @@
 services:
-  # --- ИНФРАСТРУКТУРА ---
-  db:
+  # --- БАЗЫ ДАННЫХ И ИНФРАСТРУКТУРА ---
+  app-db:
     image: postgres:16
     restart: always
+    environment:
+      - POSTGRES_DB=${APP_POSTGRES_DB}
+      - POSTGRES_USER=${APP_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${APP_POSTGRES_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    env_file:
-      - .docker.env
+      - app_postgres_data:/var/lib/postgresql/data/
+    env_file: .env
+
+  gt-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${GT_POSTGRES_DB}
+      - POSTGRES_USER=${GT_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${GT_POSTGRES_PASSWORD}
+    volumes:
+      - gt_pg_data:/var/lib/postgresql/data
+    env_file: .env
 
   redis:
     image: redis:7-alpine
     restart: always
 
-  # --- ПРИЛОЖЕНИЕ ---
+  # --- ТВОЕ ПРИЛОЖЕНИЕ ---
   web:
     build:
       context: .
@@ -21,10 +35,13 @@ services:
     entrypoint: /home/rec_shop/entrypoint.sh
     ports:
       - "8000:8000"
-    env_file:
-      - .docker.env
+    env_file: .env
+    environment:
+      - MODE=PROD
+      - DATABASE_URL=${DATABASE_URL}
+      - IS_CELERY_WORKER=False
     depends_on:
-      - db
+      - app-db
       - redis
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -34,11 +51,16 @@ services:
       context: .
       dockerfile: app/Dockerfile
     restart: always
-    command: celery -A app.utils.celery_tasks:celery_app worker --loglevel=info
-    env_file:
-      - .docker.env
+    # Добавляем -P solo для стабильности asyncio на Windows/WSL
+    command: celery -A app.utils.celery_tasks:celery_app worker --loglevel=info -E -P solo
+    env_file: .env
+    environment:
+      - MODE=PROD
+      - IS_CELERY_WORKER=True
+      - PYTHONPATH=/home/rec_shop
+      - DATABASE_URL=${DATABASE_URL}
     depends_on:
-      - db
+      - app-db
       - redis
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -51,11 +73,40 @@ services:
     command: celery -A app.utils.celery_tasks:celery_app flower --port=5555 --prometheus-metrics
     ports:
       - "5555:5555"
-    env_file:
-      - .docker.env
+    env_file: .env
+    environment:
+      - MODE=PROD
+      - PYTHONPATH=/home/rec_shop
     depends_on:
       - redis
       - worker
+
+  # --- GLITCHTIP ---
+  glitchtip:
+    image: glitchtip/glitchtip
+    restart: unless-stopped
+    ports:
+      - "8080:8000"
+    env_file: .env
+    environment:
+      - DATABASE_URL=${GT_DATABASE_URL}
+      - GLITCHTIP_DOMAIN=http://localhost:8080
+      - ALLOWED_HOSTS=localhost,glitchtip,127.0.0.1,host.docker.internal
+      - ENABLE_OPEN_USER_REGISTRATION=True
+    depends_on:
+      - gt-db
+      - redis
+
+  gt-worker:
+    image: glitchtip/glitchtip
+    command: ./bin/run-celery.sh
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - DATABASE_URL=${GT_DATABASE_URL}
+    depends_on:
+      - gt-db
+      - redis
 
   # --- МОНИТОРИНГ (МЕТРИКИ) ---
   prometheus:
@@ -108,12 +159,10 @@ services:
       - loki
 
 volumes:
-  postgres_data:
+  app_postgres_data:
+  gt_pg_data:
   grafana_data:
   loki_data:
   prometheus_data:
+  uploads:
 
-networks:
-  default:
-    external: true
-    name: glitchtip_default

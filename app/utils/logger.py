@@ -19,10 +19,16 @@ console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
 # Отправка в Loki через v2
-loki_handler = logging_loki.LokiHandler(
-    url="http://loki:3100/loki/api/v1/push",
-    tags={"app_name": "recs-app"},
-    version="1",
-)
-loki_handler.setFormatter(formatter)
-logger.addHandler(loki_handler)
+if settings.LOKI_URL and settings.MODE != "TEST":
+    try:
+        import logging_loki
+
+        loki_handler = logging_loki.LokiHandler(
+            url=settings.LOKI_URL,
+            tags={"app_name": settings.APP_NAME, "env": settings.MODE},
+            version="1",
+        )
+        loki_handler.setFormatter(formatter)
+        logger.addHandler(loki_handler)
+    except Exception as e:
+        print(f"Loki initialization failed: {e}")

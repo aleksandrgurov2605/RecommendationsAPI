@@ -1,22 +1,25 @@
 import os
+from typing import Any
 
-from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
+
+IS_WORKER = os.getenv("IS_CELERY_WORKER") == "True"
+
+DATABASE_URL = settings.DATABASE_URL
+DATABASE_PARAMS: dict[str, Any] = {"pool_size": 10, "max_overflow": 20}
 
 if settings.MODE == "TEST":
     DATABASE_URL = settings.TEST_DATABASE_URL
     DATABASE_PARAMS = {"poolclass": NullPool}
-else:
-    DATABASE_URL = settings.DATABASE_URL
-    IS_WINDOWS = os.name == "nt"
-    DATABASE_PARAMS = {}
-    if IS_WINDOWS:
-        DATABASE_PARAMS["poolclass"] = NullPool
+elif IS_WORKER:
+    DATABASE_PARAMS = {"poolclass": NullPool}
 
-engine = create_async_engine(settings.DATABASE_URL, **DATABASE_PARAMS)
+
+engine = create_async_engine(DATABASE_URL, **DATABASE_PARAMS)
 
 async_session_maker = async_sessionmaker(
     engine, expire_on_commit=False, class_=AsyncSession
