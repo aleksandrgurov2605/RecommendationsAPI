@@ -54,33 +54,43 @@ GlitchTip  http://gt.localhost/ мониторинга ошибок и прои�
 ⚙️ Переменные окружения (.env)  
 Создайте файл .env на основе примера:  
 ```.env
-# App
-APP_NAME=RecommendationsAPI
-MODE=DEV
-LOG_LEVEL=INFO
-
-# Auth
-SECRET_KEY=your_secret_key_here
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# Database
-DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/recs_db
-```
-Создайте файл .docker.env на основе примера:  
-```.docker.env
-# App
-APP_NAME=RecommendationsAPI
+# --- НАСТРОЙКИ ВАШЕГО ПРИЛОЖЕНИЯ ---
+APP_NAME="RecommendationsAPI"
 MODE=PROD
-LOG_LEVEL=INFO
+LOG_LEVEL="INFO"
 
-# Auth
-SECRET_KEY=your_secret_key_here
+APP_POSTGRES_DB=recs_db
+APP_POSTGRES_USER=user
+APP_POSTGRES_PASSWORD=password
+# Ссылка на сервис app-db 
+DATABASE_URL=postgresql+asyncpg://user:password@app-db:5432/recs_db
+
+# --- НАСТРОЙКИ GLITCHTIP ---
+GT_POSTGRES_DB=glitchtip
+GT_POSTGRES_USER=glitchtip
+GT_POSTGRES_PASSWORD=glitchtip_pass
+# Ссылка на сервис gt-db
+GT_DATABASE_URL=postgres://glitchtip:glitchtip_pass@gt-db:5432/glitchtip
+
+# Общий Redis для всех
+REDIS_URL=redis://redis:6379/0
+CELERY_BROKER_URL=redis://redis:6379/0
+
+# GlitchTip Config
+
+#GLITCHTIP_DOMAIN=http://localhost/gt
+#SENTRY_DSN=http://3d1605aa00a74cf3ad4c38ee3ef187ff@gt.localhost/1
+# SENTRY_DSN=http://3d1605aa00a74cf3ad4c38ee3ef187ff@nginx/gt/1
+# Регистрация (True только для создания первого админа, потом ставь False)
+#ENABLE_OPEN_USER_REGISTRATION=False
+#SECURE_SSL_REDIRECT=False
+
+# Остальное
+LOKI_URL=http://loki:3100/loki/api/v1/push
+
+SECRET_KEY=your-super-secret-key-here
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# Database
-DATABASE_URL=postgresql+asyncpg://user:password@db:5432/recs_db
 ```
 
 🏗 Архитектура системы  
