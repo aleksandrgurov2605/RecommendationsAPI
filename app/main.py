@@ -7,6 +7,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+from starlette.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.errors.carts_exceptions import CartUnitNotFoundError, NotEnoughItemsError
@@ -51,6 +52,8 @@ sentry_sdk.init(
 app = FastAPI()
 
 Instrumentator().instrument(app).expose(app)
+
+app.mount("/static", StaticFiles(directory="/home/rec_shop/static"), name="static")
 
 
 @app.middleware("http")

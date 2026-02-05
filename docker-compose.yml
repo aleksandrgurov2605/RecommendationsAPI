@@ -1,5 +1,4 @@
 services:
-  # --- БАЗЫ ДАННЫХ И ИНФРАСТРУКТУРА ---
   app-db:
     image: postgres:16
     restart: always
@@ -26,20 +25,19 @@ services:
     image: redis:7-alpine
     restart: always
 
-  # --- ТВОЕ ПРИЛОЖЕНИЕ ---
   web:
     build:
       context: .
       dockerfile: app/Dockerfile
     restart: always
     entrypoint: /home/rec_shop/entrypoint.sh
-    ports:
-      - "8000:8000"
     env_file: .env
     environment:
       - MODE=PROD
       - DATABASE_URL=${DATABASE_URL}
       - IS_CELERY_WORKER=False
+    volumes:
+      - static_volume:/home/rec_shop/static
     depends_on:
       - app-db
       - redis
@@ -51,7 +49,6 @@ services:
       context: .
       dockerfile: app/Dockerfile
     restart: always
-    # Добавляем -P solo для стабильности asyncio на Windows/WSL
     command: celery -A app.utils.celery_tasks:celery_app worker --loglevel=info -E -P solo
     env_file: .env
     environment:
@@ -70,9 +67,7 @@ services:
       context: .
       dockerfile: app/Dockerfile
     restart: always
-    command: celery -A app.utils.celery_tasks:celery_app flower --port=5555 --prometheus-metrics
-    ports:
-      - "5555:5555"
+    command: celery -A app.utils.celery_tasks:celery_app flower --port=5555 --prometheus-metrics --url_prefix=flower
     env_file: .env
     environment:
       - MODE=PROD
@@ -81,18 +76,15 @@ services:
       - redis
       - worker
 
-  # --- GLITCHTIP ---
   glitchtip:
     image: glitchtip/glitchtip
-    restart: unless-stopped
-    ports:
-      - "8080:8000"
-    env_file: .env
     environment:
-      - DATABASE_URL=${GT_DATABASE_URL}
-      - GLITCHTIP_DOMAIN=http://localhost:8080
-      - ALLOWED_HOSTS=localhost,glitchtip,127.0.0.1,host.docker.internal
-      - ENABLE_OPEN_USER_REGISTRATION=True
+      - DATABASE_URL=${GT_DATABASE_URL} # Обязательно!
+      - GLITCHTIP_DOMAIN=http://gt.localhost
+      - ALLOWED_HOSTS=gt.localhost,glitchtip,nginx
+      - USE_X_FORWARDED_HOST=True
+      - SECURE_PROXY_SSL_HEADER=HTTP_X_FORWARDED_PROTO,http
+      - DJANGO_PROXY_TRUSTED_ORIGINS=http://gt.localhost
     depends_on:
       - gt-db
       - redis
@@ -108,12 +100,14 @@ services:
       - gt-db
       - redis
 
-  # --- МОНИТОРИНГ (МЕТРИКИ) ---
   prometheus:
     image: prom/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.external-url=http://localhost/prometheus/'
+      - '--web.route-prefix=/prometheus/'
     restart: always
-    ports:
-      - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
@@ -124,24 +118,22 @@ services:
   grafana:
     image: grafana/grafana
     restart: always
-    ports:
-      - "3000:3000"
     user: "472"
     depends_on:
       - prometheus
       - loki
+    environment:
+      - GF_SERVER_ROOT_URL=http://localhost/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana_datasources.yml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
       - ./grafana_dashboards_config.yml:/etc/grafana/provisioning/dashboards/provider.yaml:ro
       - ./grafana_dashboards:/var/lib/grafana/dashboards:ro
 
-  # --- МОНИТОРИНГ (ЛОГИ) ---
   loki:
     image: grafana/loki:latest
     restart: always
-    ports:
-      - "3100:3100"
     volumes:
       - loki_data:/loki
       - ./loki-config.yaml:/etc/loki/local-config.yaml
@@ -158,6 +150,21 @@ services:
     depends_on:
       - loki
 
+  nginx:
+    build:
+      context: ./nginx
+    ports:
+      - "80:80"
+    volumes:
+      - static_volume:/home/rec_shop/static:ro
+    depends_on:
+      - web
+      - flower
+      - grafana
+      - glitchtip
+      - prometheus
+    restart: always
+
 volumes:
   app_postgres_data:
   gt_pg_data:
@@ -165,4 +172,4 @@ volumes:
   loki_data:
   prometheus_data:
   uploads:
-
+  static_volume:

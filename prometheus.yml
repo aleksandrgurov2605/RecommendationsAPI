@@ -9,20 +9,7 @@ scrape_configs:
           app_name: 'fastapi'
 
   - job_name: 'celery'
+    metrics_path: '/flower/metrics'
     static_configs:
       - targets: ['flower:5555']
 
-
-
-
-
-
-#scrape_configs:
-#  - job_name: 'fastapi'
-#    static_configs:
-#      - targets: ['localhost:8000'] # если запускаете без Docker
-#    #  - targets: ['host.docker.internal:8000'] # если запускаете через Docker
-#
-#  - job_name: 'celery-flower'
-#    static_configs:
-#      - targets: ['host.docker.internal:5555'] # Метрики из Flower

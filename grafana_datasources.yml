@@ -3,7 +3,7 @@ datasources:
   - name: Prometheus
     type: prometheus
     uid: DS_PROMETHEUS
-    url: http://prometheus:9090
+    url: http://prometheus:9090/prometheus
     isDefault: true
   - name: Loki
     type: loki
