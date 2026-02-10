@@ -16,9 +16,6 @@ async def checkout_purchase(
     """
     Создать заказ на основе текущей корзины пользователя.
     Сохранить позиции заказа, вычесть остатки и очистить корзину.
-    :param uow:
-    :param current_user:
-    :return:
     """
     logger.info(
         f"Создать заказ на основе текущей корзины пользователя {current_user.id}"
@@ -36,11 +33,6 @@ async def list_purchases(
 ):
     """
     Получить все заказы текущего пользователя.
-    :param uow:
-    :param current_user:
-    :param page:
-    :param page_size:
-    :return:
     """
     logger.info(f"Получить все заказы текущего пользователя {current_user.id}.")
     result = await PurchaseService.get_list_purchases(

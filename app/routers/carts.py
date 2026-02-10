@@ -15,9 +15,6 @@ async def get_cart(
 ):
     """
     Получить корзину пользователя.
-    :param uow:
-    :param current_user:
-    :return:
     """
     logger.info("Получить корзину пользователя.")
     result = await CartService.get_cart(uow, current_user)
@@ -28,10 +25,6 @@ async def get_cart(
 async def add_item_to_cart(payload: CartUnitCreate, uow: UOWDep, current_user: UserDep):
     """
     Добавить товар в корзину.
-    :param payload:
-    :param uow:
-    :param current_user:
-    :return:
     """
     logger.info(f"Добавить товар {payload.item_id} в корзину.")
     cart_item = await CartService.add_item_to_cart(uow, current_user, payload)
@@ -44,11 +37,6 @@ async def update_cart_unit(
 ):
     """
     Обновить количество товара в корзине.
-    :param item_id:
-    :param payload:
-    :param uow:
-    :param current_user:
-    :return:
     """
     logger.info(f"Обновить количество товара {item_id} в корзине.")
     updated_unit = await CartService.update_cart_unit(
@@ -63,10 +51,6 @@ async def remove_cart_unit_from_cart(
 ):
     """
     Удалить товар из корзины.
-    :param cart_unit_id:
-    :param uow:
-    :param current_user:
-    :return:
     """
     logger.info(f"Удалить товар {cart_unit_id=} в корзины.")
     await CartService.delete_cart_unit(uow, current_user, cart_unit_id)
@@ -77,9 +61,6 @@ async def remove_cart_unit_from_cart(
 async def clear_cart(uow: UOWDep, current_user: UserDep):
     """
     Удалить все товары из корзины.
-    :param uow:
-    :param current_user:
-    :return:
     """
     logger.info(f"Удалить все товары из корзины пользователя {current_user.id}.")
     await CartService.delete_all_cart_units(uow, current_user)

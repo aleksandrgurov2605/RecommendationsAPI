@@ -13,6 +13,9 @@ async def get_recommendations(
     uow: UOWDep,
     user_id: int = Query(..., gt=0),
 ):
+    """
+    Получить рекомендации для пользователя по id.
+    """
     logger.info(f"Получение рекомендаций для пользователя {user_id}")
     result = await RecommendationService.get_recommendations(uow, user_id)
     return {"recommendations": result}
@@ -20,6 +23,9 @@ async def get_recommendations(
 
 @router.post("/generate")
 async def generate_recommendations(recommendation: RecommendationCreate):
+    """
+    Начать генерацию рекомендация для пользователя по id.
+    """
     logger.info(
         f"Старт генерации рекомендаций для пользователя {recommendation.user_id}"
     )
@@ -35,21 +41,3 @@ async def generate_recommendations(recommendation: RecommendationCreate):
         "task_id": task.id,
         "status": "queued",
     }
-
-
-# @router.get("/status/{task_id}")
-# async def get_task_status(task_id: str):
-#     # Получаем объект задачи по ID
-#     task_result = AsyncResult(task_id, app=celery_app)
-#
-#     result = {
-#         "task_id": task_id,
-#         "status": task_result.status,  # PENDING, STARTED, SUCCESS, FAILURE
-#     }
-#
-#     if task_result.status == 'SUCCESS':
-#         result["message"] = "Расчет окончен"
-#     elif task_result.status == 'FAILURE':
-#         result["error"] = str(task_result.result)
-#
-#     return result

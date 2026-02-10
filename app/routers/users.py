@@ -18,8 +18,6 @@ router = APIRouter(
 async def get_all_users(uow: UOWDep):
     """
     Получить список всех активных пользователей.
-    :param uow:
-    :return:
     """
     logger.info("Получить список всех активных пользователей.")
     categories = await UserService.get_all_users(uow)
@@ -30,9 +28,6 @@ async def get_all_users(uow: UOWDep):
 async def create_user(uow: UOWDep, user: UserCreate):
     """
     Создать нового пользователя.
-    :param uow:
-    :param user:
-    :return:
     """
     logger.info(f"Создать нового пользователя с {user.email=}.")
     user_created = await UserService.add_user(uow, user)
@@ -43,9 +38,6 @@ async def create_user(uow: UOWDep, user: UserCreate):
 async def get_user_by_id(uow: UOWDep, user_id: int):
     """
     Получить активного пользователя по id.
-    :param uow:
-    :param user_id:
-    :return:
     """
     logger.info(f"Получить активного пользователя по id = {user_id}.")
     user = await UserService.get_user(uow, user_id)
@@ -58,10 +50,6 @@ async def update_user(
 ):
     """
     Обновить пользователя по id.
-    :param uow:
-    :param user_id:
-    :param user:
-    :return:
     """
     logger.info(f"Обновить пользователя по id = {user_id}.")
     user_updated = await UserService.update_user(uow, user_id, user)
@@ -72,9 +60,6 @@ async def update_user(
 async def delete_user(uow: UOWDep, current_user: UserDep, user_id: int):
     """
     Удалить пользователя по id.
-    :param uow:
-    :param user_id:
-    :return:
     """
     logger.info(f"Удалить пользователя по id = {user_id}.")
     await UserService.delete_user(uow, user_id)
@@ -87,9 +72,6 @@ async def login(
 ) -> dict[str, str]:
     """
     Аутентифицировать пользователя и получить access_token и refresh_token.
-    :param uow:
-    :param form_data:
-    :return:
     """
     logger.info(
         "Аутентифицировать пользователя и получить access_token и refresh_token."
@@ -104,9 +86,6 @@ async def refresh_token(
 ):
     """
     Обновляет access_token с помощью refresh_token.
-    :param uow:
-    :param user_refresh_token:
-    :return:
     """
     logger.info(f"{current_user=}")
     access_token = await UserService.refresh_token(uow, user_refresh_token)

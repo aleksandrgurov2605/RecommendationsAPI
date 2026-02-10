@@ -30,6 +30,6 @@ ENV PATH="/home/rec_shop/.venv/bin:$PATH"
 
 # Copy your application source code
 COPY app app
-COPY alembic.ini .docker.env seed.py entrypoint.sh seed.sh ./
+COPY alembic.ini seed.py entrypoint.sh seed.sh ./
 
 RUN chmod +x entrypoint.sh seed.sh

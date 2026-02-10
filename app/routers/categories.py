@@ -15,8 +15,6 @@ router = APIRouter(
 async def get_all_categories(uow: UOWDep):
     """
     Получить список всех активных категорий.
-    :param uow:
-    :return:
     """
     logger.info("Получить список всех активных категорий.")
     categories = await CategoryService.get_all_categories(uow)
@@ -27,9 +25,6 @@ async def get_all_categories(uow: UOWDep):
 async def create_category(uow: UOWDep, category: CategoryCreate):
     """
     Создать новую категорию.
-    :param uow:
-    :param category:
-    :return:
     """
     logger.info(f"Создать новую категорию {category.name}.")
     category_created = await CategoryService.add_category(uow, category)
@@ -40,9 +35,6 @@ async def create_category(uow: UOWDep, category: CategoryCreate):
 async def get_category_by_id(uow: UOWDep, category_id: int):
     """
     Получить активную категорию по id.
-    :param uow:
-    :param category_id:
-    :return:
     """
     logger.info(f"Получить активную категорию по id = {category_id}.")
     category = await CategoryService.get_category(uow, category_id)
@@ -53,10 +45,6 @@ async def get_category_by_id(uow: UOWDep, category_id: int):
 async def update_category(uow: UOWDep, category_id: int, category: CategoryCreate):
     """
     Обновить категорию по id.
-    :param uow:
-    :param category_id:
-    :param category:
-    :return:
     """
     logger.info(f"Обновить категорию по id {category_id}.")
     category_updated = await CategoryService.update_category(uow, category_id, category)
@@ -67,9 +55,6 @@ async def update_category(uow: UOWDep, category_id: int, category: CategoryCreat
 async def delete_category(uow: UOWDep, category_id: int):
     """
     Удалить категорию по id.
-    :param uow:
-    :param category_id:
-    :return:
     """
     logger.info(f"Удалить категорию по id {category_id}.")
     await CategoryService.delete_category(uow, category_id)

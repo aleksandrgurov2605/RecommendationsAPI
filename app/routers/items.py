@@ -15,8 +15,6 @@ router = APIRouter(
 async def get_all_items(uow: UOWDep):
     """
     Получить список всех активных товаров.
-    :param uow:
-    :return:
     """
     logger.info("Получить список всех активных товаров.")
     items = await ItemService.get_all_items(uow)
@@ -27,9 +25,6 @@ async def get_all_items(uow: UOWDep):
 async def create_item(uow: UOWDep, item: ItemCreate):
     """
     Создать новый товар.
-    :param uow:
-    :param item:
-    :return:
     """
     logger.info(f"Создать новый товар {item.name}.")
     item_created = await ItemService.add_item(uow, item)
@@ -40,9 +35,6 @@ async def create_item(uow: UOWDep, item: ItemCreate):
 async def get_item_by_id(uow: UOWDep, item_id: int):
     """
     Получить активный товар по id.
-    :param uow:
-    :param item_id:
-    :return:
     """
     logger.info(f"Получить активный товар по id = {item_id}.")
     item = await ItemService.get_item(uow, item_id)
@@ -53,10 +45,6 @@ async def get_item_by_id(uow: UOWDep, item_id: int):
 async def update_item(uow: UOWDep, item_id: int, item: ItemCreate):
     """
     Обновить товар по id
-    :param uow:
-    :param item_id:
-    :param item:
-    :return:
     """
     logger.info(f"Обновить товар по id = {item_id}.")
     item_updated = await ItemService.update_item(uow, item_id, item)
@@ -67,9 +55,6 @@ async def update_item(uow: UOWDep, item_id: int, item: ItemCreate):
 async def delete_item(uow: UOWDep, item_id: int):
     """
     Удалить товар по id.
-    :param uow:
-    :param item_id:
-    :return:
     """
     logger.info(f"Удалить товар по id {item_id}.")
     await ItemService.delete_item(uow, item_id)
